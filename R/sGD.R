@@ -45,7 +45,7 @@
 #' # specify landscape and sGD output 
 #' landscape = raster(system.file("extdata","sGD_demo_IBR_landscape.asc",package="sGD"))
 #' sGD_output = read.csv(system.file("extdata","sGD_demo_output_sGD.csv",package="sGD"))
-
+#'
 #' # Convert raster to dataframe for ggplot 
 #' landscape.p <- rasterToPoints(landscape)
 #' landscape.df <- data.frame(landscape.p)
