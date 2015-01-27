@@ -1,0 +1,27 @@
+citHeader("To cite package sGD in publications use:")
+
+citEntry(entry="Article",
+
+	title = "Spatially-explicit estimation of Wright’s neighborhood size in continuous populations.",
+
+	author = personList(as.person("Andrew J. Shirk"),
+        as.person("Samuel A. Cushman")),
+
+	journal = "Frontiers in Ecology and Evolution",
+
+	year = 2014,
+	
+	volume = ,
+
+	issue =  ,
+
+	pages	= "",
+
+ 
+	textVersion = 
+	paste("Shirk, A.J. and Cushman, S.A. 2014.",
+	"Spatially-explicit estimation of Wright’s neighborhood size in continuous populations.",
+
+	"Frontiers in Ecology and Evolution.")
+)
+
