@@ -9,7 +9,23 @@
 #' @param NS_ans Boolean (T or F) answer to whether you want to calculate Wright's neighborhood size.
 #' @param GD_ans Boolean (T or F) answer to whether you want to calculate genetic diversity indices. This calculation can take a long time depending on how many individuals are in your sample and the \code{radius} of the neighborhood..
 #' @param NeEstimator_dir Path to the NeEstimator 2.0 directory. NeEstimator 2.0 is required only if NS_ans = T. It can be downloaded from \url{http://molecularfisherieslaboratory.com.au/neestimator-software}.
-#' @return A comma delimited text file containing estimates of genetic diversity and neighborhood size for neighborhoods surrounding each sample location.
+#' @return sGD produces a comma delimited text file containing estimates of genetic diversity and neighborhood size for neighborhoods surrounding each sample location.
+#' @return Columns in the output text file include:
+#' @return \code{ID} - the ID of the individual at the neighborhood center, corresponding to the ID of the individual in the \code{xy_file}.
+#' @return \code{X} - the X coordinate of the neighborhood center.
+#' @return \code{Y} - the Y coordinate of the neighborhood center.
+#' @return \code{N} - the number of individuals within the neighborhood.
+#' @return \code{A} - the average number of alleles across all loci/individuals within the neighborhood.
+#' @return \code{Ap} - the proportion of alleles from the entire population that area actually present in the neighborhood.
+#' @return \code{Ar} - the allelic richness across all loci/individuals within the neighborhood.
+#' @return \code{He} - the average expected heterozygosity across all loci/individuals within the neighborhood.
+#' @return \code{Ho} - the average observed heterozygosity across all loci/individuals within the neighborhood.
+#' @return \code{FIS} - the average inbreeding coefficient across all loci/individuals within the neighborhood.
+#' @return \code{NS_ex0pct} - an estimate of the effective number of breeding indviduals (Wright's neighborhood size) present within the neighborhood, not exluding rare alleles that could bias the estimate.
+#' @return \code{NS_ex2pct} - an estimate of the effective number of breeding indviduals (Wright's neighborhood size) present within the neighborhood, exluding alleles with a frequency of 0.02 or less.
+#' @return \code{NS_ex5pct} - an estimate of the effective number of breeding indviduals (Wright's neighborhood size) present within the neighborhood, exluding alleles with a frequency of 0.05 or less.
+#' @return \code{NS_ex10pct} - an estimate of the effective number of breeding indviduals (Wright's neighborhood size) present within the neighborhood, exluding alleles with a frequency of 0.10 or less.
+#' 
 #' @examples 
 #' #Make sure your paths are correct for your operating system (e.g. in linux, it might be "/home/yourname/Temp")
 #' library(sGD)
