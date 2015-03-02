@@ -230,7 +230,8 @@ sGD <- function(genind_obj,output_name,xy,dist_mat,radius,min_N,NS_ans,GD_ans,Ne
     # read the Ne results file
     LDNe_output = readLines("Ne2_output.txt")
     LDNe_datalines = grep("Estimated Ne",LDNe_output)
-    LDNe_estimates = data.frame(matrix(as.numeric(unlist(strsplit(LDNe_output[LDNe_datalines], "\\s+"))),nrow=npops,ncol=7,byrow=T))[4:7]
+    LDNe_data = unlist(strsplit(LDNe_output[LDNe_datalines], "\\s+")) 
+    LDNe_estimates = data.frame(matrix(LDNe_data,nrow=npops,ncol=7,byrow=T)[,4:7])
     names(LDNe_estimates) = c("NS_ex10pct","NS_ex5pct","NS_ex2pct","NS_ex0pct")
       
     # create columns to hold the Ne estimates and assign default value of N
@@ -260,7 +261,7 @@ sGD <- function(genind_obj,output_name,xy,dist_mat,radius,min_N,NS_ans,GD_ans,Ne
   if(NHmat_ans==TRUE)
   {
     cat("Writing neighborhood membership matrix to file...\n")
-    write.table (neighborhood_mat,paste(output_name,"_neighborhood_mat.csv",sep=""),row.names=NH_summary$ID,col.names=NH_summary$ID,sep=",",na="")
+    write.table (neighborhood_mat,paste(output_name,"_neighborhood_mat.csv",sep=""),row.names=NH_summary$Indiv_ID,col.names=NH_summary$Indiv_ID,sep=",",na="")
   }
   cat("Processing complete.\n")
 }
