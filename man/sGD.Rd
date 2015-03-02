@@ -8,6 +8,8 @@ sGD(genind_obj, output_name, xy, dist_mat, radius, min_N, NS_ans, GD_ans,
   NeEstimator_dir = NULL, NHmat_ans = FALSE, genout_ans = FALSE)
 }
 \arguments{
+\item{genind_obj}{A genind object containing the indivual genotypes.}
+
 \item{output_name}{A character string that will be appended to the front of the output filename (will end with "_sGD.csv").}
 
 \item{xy}{A dataframe containing 3 columns in the following order: individual IDs, X coordinates, and Y coordinates.}
@@ -27,8 +29,6 @@ sGD(genind_obj, output_name, xy, dist_mat, radius, min_N, NS_ans, GD_ans,
 \item{NHmat_ans}{Boolean (T or F) answer to whether you want sGD to write a matrix defining neighborhood membership. For each row/column of the matrix, a value of 1 occurs at the indices of all individuals in the neighborhood and a value of 0 occurs for all individuals outside the neighborhood.}
 
 \item{genout_ans}{Boolean (T or F) answer to whether you want sGD to write a genepop file containing the genotypes for all neighborhoods to the workind directory.}
-
-\item{genepop_file}{The path to a genotype file in genepop format (with a .gen extension).}
 }
 \value{
 sGD produces a comma delimited text file containing estimates of genetic diversity and neighborhood size for neighborhoods surrounding each sample location.
