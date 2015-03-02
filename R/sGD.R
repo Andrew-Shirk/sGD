@@ -6,9 +6,12 @@
 #' @param dist_mat An NxN (N= sample size) matrix of pairwise landscape distances (Euclidean or effective).
 #' @param radius The radius of the genetic neighborhood in the same units as \code{dist_mat}.
 #' @param min_N The minimum sample size per neighborhood for indices to be calculated. NA is returned for neighborhoods < \code{min_N}.
-#' @param NS_ans Boolean (T or F) answer to whether you want to calculate Wright's neighborhood size.
-#' @param GD_ans Boolean (T or F) answer to whether you want to calculate genetic diversity indices. This calculation can take a long time depending on how many individuals are in your sample and the \code{radius} of the neighborhood..
+#' @param NS_ans Boolean (T or F) answer to whether you want sGD to calculate Wright's neighborhood size.
+#' @param GD_ans Boolean (T or F) answer to whether you want sGD to calculate genetic diversity indices. This calculation can take a long time depending on how many individuals are in your sample and the \code{radius} of the neighborhood..
 #' @param NeEstimator_dir Path to the NeEstimator 2.0 directory. NeEstimator 2.0 is required only if NS_ans = T. It can be downloaded from \url{http://molecularfisherieslaboratory.com.au/neestimator-software}.
+#' @param NHmat_ans Boolean (T or F) answer to whether you want sGD to write a matrix defining neighborhood membership. For each row/column of the matrix, a value of 1 occurs at the indices of all individuals in the neighborhood and a value of 0 occurs for all individuals outside the neighborhood.
+#' @param genout_ans Boolean (T or F) answer to whether you want sGD to write a genepop file containing the genotypes for all neighborhoods to the workind directory. 
+#' 
 #' @return sGD produces a comma delimited text file containing estimates of genetic diversity and neighborhood size for neighborhoods surrounding each sample location.
 #' @return Columns in the output text file include:
 #' @return \code{ID} - the ID of the individual at the neighborhood center, corresponding to the ID of the individual in the \code{xy_file}.
@@ -30,21 +33,22 @@
 #' #Make sure your paths are correct for your operating system (e.g. in linux, it might be "/home/yourname/Temp")
 #' library(sGD)
 #' setwd("C:/Temp") # the output file will be written to the working directory
-#' genepop_file = system.file("extdata","sGD_demo_genepop.gen",package="sGD") 
-#' output_name = "demo"     
-#' xy_file = system.file("extdata","sGD_demo_xy.csv",package="sGD")                  
-#' dist_mat = system.file("extdata","sGD_demo_cdmat.csv",package="sGD")  
-#' radius = 16238 # for this demo, units are in meters
-#' min_N = 20
-#' NS_ans = TRUE
-#' GD_ans = TRUE
-#' NeEstimator_dir = "C:/NeEstimator"
+#' genepop_file <- system.file("extdata","sGD_demo_genepop.gen",package="sGD") 
+#' genind_obj = read.genepop(genepop_file,quiet=T)
+#' output_name <- "demo"     
+#' xy_file <- system.file("extdata","sGD_demo_xy.csv",package="sGD")                  
+#' dist_mat <- system.file("extdata","sGD_demo_cdmat.csv",package="sGD")  
+#' radius <- 16238 # for this demo, units are in meters
+#' min_N <- 20
+#' NS_ans <- TRUE
+#' GD_ans <- TRUE
+#' NeEstimator_dir <- "C:/NeEstimator"
 #' 
-#' sGD(genepop_file,output_name,xy_file,dist_mat,radius,min_N,NS_ans,GD_ans,NeEstimator_dir)
+#' sGD(genind_obj,output_name,xy_file,dist_mat,radius,min_N,NS_ans=TRUE,GD_ans=TRUE,NeEstimator_dir,NHmat_ans=FALSE,genout_ans=FALSE)
 #' 
 #' # specify landscape and sGD output 
-#' landscape = raster(system.file("extdata","sGD_demo_IBR_landscape.asc",package="sGD"))
-#' sGD_output = read.csv(system.file("extdata","sGD_demo_output_sGD.csv",package="sGD"))
+#' landscape <- raster(system.file("extdata","sGD_demo_IBR_landscape.asc",package="sGD"))
+#' sGD_output <- read.csv(system.file("extdata","sGD_demo_output_sGD.csv",package="sGD"))
 #'
 #' # Convert raster to dataframe for ggplot 
 #' landscape.p <- rasterToPoints(landscape)
@@ -64,7 +68,7 @@
 #'        panel.background = element_blank()) 
 
 
-sGD <- function(genepop_file,output_name,xy_file,dist_mat,radius,min_N,NS_ans,GD_ans,NeEstimator_dir=NULL)
+sGD <- function(genind_obj,output_name,xy_file,dist_mat,radius,min_N,NS_ans,GD_ans,NeEstimator_dir=NULL,NHmat_ans=FALSE,genout_ans=FALSE)
 {
   # do initial error checking
   if(file.exists(genepop_file)==F){stop("Cannot read genepop_file. Is the path and filename correct?")}  
@@ -78,11 +82,12 @@ sGD <- function(genepop_file,output_name,xy_file,dist_mat,radius,min_N,NS_ans,GD
   # read input files and convert to required format
   cat ("Reading input files...\n")
   
-  adegen_dat = read.genepop(genepop_file,quiet=T)
+  genind_obj = read.genepop(genepop_file,quiet=T)
   
   sink(file=file()) ## silence genind output 
-  hierf_dat = genind2hierfstat(adegen_dat)
-  df_dat = genind2df(adegen_dat)
+  hierf_dat = genind2hierfstat(genind_obj)
+  df_dat = genind2df(genind_obj)
+  df_dat$pop = as.character(df_dat$pop)
   sink() ## undo silencing
   close(con=file())
   
@@ -90,14 +95,14 @@ sGD <- function(genepop_file,output_name,xy_file,dist_mat,radius,min_N,NS_ans,GD
   dist_mat = read.csv(dist_mat,header=F)
   
   # set parameters
-  numloci = length(adegen_dat@loc.names)
-  numindivs = length(adegen_dat@ind.names)
+  numloci = length(genind_obj@loc.names)
+  numindivs = length(genind_obj@ind.names)
   OS = as.character(Sys.info()['sysname']) # Needs to be a character for Linux
   NH_genepop_filename = paste(output_name,"_Genepop.gen",sep="")
   NH_summary_filename = paste(output_name,"_sGD.csv",sep="")
 
   # do additional error checking
-    if(is.numeric(min_N)==F){stop("min_N must be an integer")}
+  if(is.numeric(min_N)==F){stop("min_N must be an integer")}
   if(is.numeric(xy[,2])==F){stop("The second column of the xy file must be a numeric x coordinate (e.g. longitude)")}  
   if(is.numeric(xy[,3])==F){stop("The third column of the xy file must be a numeric y coordinate (e.g. latitude)")}  
   if(nrow(xy)!=numindivs){stop("The number of rows in the xy file does not match the number of individuals in the genepop file")}
@@ -133,40 +138,30 @@ sGD <- function(genepop_file,output_name,xy_file,dist_mat,radius,min_N,NS_ans,GD
   
   for (locus in 1:numloci)
   {
-    write.table(adegen_dat@loc.names[locus], NH_genepop_filename,sep="\t",quote=F,col.names=F,row.names=F,append=T)
+    write.table(genind_obj@loc.names[locus], NH_genepop_filename,sep="\t",quote=F,col.names=F,row.names=F,append=T)
   }
   
   # define neighborhoods and write to genepop file
   cat("Determining neighborhood membership from dist_mat and radius...\n")
-  neighborhoods = list() # create an empty list to fill with the indices of neigbhorhood members
-  neighborhood_N = c()  # create an empty vector to fill with neighborhood sizes
-  
-  counter = 1 # counter needed to track neighborhoods with min_N individuals (i.e. npops in gen file)
-  
-  for (i in 1:numindivs)
-  {
-    neighborhood_N[i] = length(which(dist_mat[i,] < radius))
-    if (neighborhood_N[i]>=min_N)
-    {
-      neighborhoods[[counter]] = which(dist_mat[i,] < radius)
-      counter = counter+1
-    }
-  }
+
+  neighborhood_mat = ifelse(dist_mat < radius,1,0)
+  neighborhood_N = colSums(neighborhood_mat)
   
   # npops tracks the number of neighborhoods with min_N individuals
-  npops = length(subset(neighborhood_N,neighborhood_N >= min_N))
-  
-  # write neigborhood files
-  for (pop in 1:npops)
+  valid_pops = which(neighborhood_N >= min_N)
+  npops = length(valid_pops)
+                           
+  # write neigborhood genepop file
+  for (pop in valid_pops)
   {
     write.table("POP", NH_genepop_filename,sep="\t",quote=F,col.names=F,row.names=F,append=T)
-    output = df_dat[neighborhoods[[pop]],]
+    output = df_dat[which(neighborhood_mat[pop,]==1),]
     indivIDs = paste("P",pop,"I",c(1:nrow(output)),sep="")
     output = data.frame(indivIDs,",",output[2:ncol(output)])
     write.table(output, NH_genepop_filename,sep="\t",quote=F,col.names=F,row.names=F,append=T)
   }
   
-  NH_summary = data.frame(adegen_dat@ind.names,xy[,c(2,3)],neighborhood_N,stringsAsFactors=F)
+  NH_summary = data.frame(genind_obj@ind.names,xy[,c(2,3)],neighborhood_N,stringsAsFactors=F)
   names(NH_summary) = c("ID","X","Y","N")
 
   if (GD_ans == T)
@@ -174,25 +169,20 @@ sGD <- function(genepop_file,output_name,xy_file,dist_mat,radius,min_N,NS_ans,GD
     # Calculate genetic diversity indices and HWE
     cat("Calculating genetic diversity indices for neighborhoods...\n")
   
-    NH_adegen_dat = import2genind(NH_genepop_filename,quiet=T)
-    NH_hierf_dat = genind2hierfstat(NH_adegen_dat)
-    #NH_df_dat = genind2df(NH_adegen_dat)
+    NH_dat = import2genind(NH_genepop_filename,quiet=T)
+    NH_hierf_dat = genind2hierfstat(NH_dat)
+    #NH_df_dat = genind2df(NH_dat)
 
     NH_A = nb.alleles(NH_hierf_dat)
     NH_Ar = allelic.richness(NH_hierf_dat)$Ar
-    NH_Ap = c()
-    for (pop in 1:npops)
-    {
-      NH_Ap = c(NH_Ap,sum(NH_A[,pop])/sum(NH_adegen_dat@loc.nall))
-    }
-    
+    NH_Ap = colSums(NH_A)/sum(NH_dat@loc.nall)
     NH_stats = basic.stats(NH_hierf_dat,digits=3)
     NH_Ho = NH_stats$Ho
     NH_Hs = NH_stats$Hs
     NH_FIS = NH_stats$Fis
     
     #sink(file=file()) ## silence genind output 
-    #NH_HWE = HWE.test(NH_adegen_dat)
+    #NH_HWE = HWE.test(NH_dat)
     #sink() ## undo silencing
     
     A = c()
@@ -291,7 +281,7 @@ sGD <- function(genepop_file,output_name,xy_file,dist_mat,radius,min_N,NS_ans,GD
     
     counter = 1
     
-    # population empty vectors with estimates if N > min_N
+    # populate empty vectors with estimates if N > min_N
     for (i in 1:nrow(NH_summary))
     {
       if(NH_summary$N[i]<min_N)
@@ -325,46 +315,73 @@ sGD <- function(genepop_file,output_name,xy_file,dist_mat,radius,min_N,NS_ans,GD
     # remove temporary files
     file.remove("Ne2_input.txt")
     file.remove("Ne2_output.txt")
-    file.remove(NH_genepop_filename)
+    if(genout_ans==FALSE)
+    {
+      file.remove(NH_genepop_filename)
+    }
   }
   
   # write NH_summary to .csv file
   cat("Appending results to neighborhood summary file...\n")
   write.table (NH_summary,NH_summary_filename,row.names=F,sep=",",na="")
+  
+  if(NHmat_ans==TRUE)
+  {
+    cat("Writing neighborhood membership matrix to file...\n")
+    write.table (neighborhood_mat,paste(output_name,"_neighborhood_mat.csv",sep=""),row.names=NH_summary$ID,col.names=NH_summary$ID,sep=",",na="")
+  }
   cat("Processing complete.\n")
 }
 
 
-#' Calculate a pairwise landscape distance matrix (Euclidian or cost-distance).
+#' Calculate a pairwise landscape distance matrix (Euclidian or cost-distance). Make sure the projection of the inputs is specified correctly by the \code{proj} argument. If you use a landscape raster to calculate cost-weighted distances, it must match the projection of the xy_file points.
 #' 
 #' @param method Specify the type of distance matrix to be produced, using "ed" for Euclidean distance and "cd" for cost-weighted (i.e. effective) distance or c("ed","cd") for both. 
 #' @param output_name A character string that will be appended to the front of the output filenames.
-#' @param xy_file A comma delimited text file containing columns for individual IDs, X coordinate, and Y coordinates. The coordinates in the xy file must be in the same projection as the coordinates of the raster if you calculate cost-weighted distances. Specify the projection in proj4 format using the \code{proj} parameter.
+#' @param points A comma delimited text file containing columns for individual ID, X coordinate, and Y coordinate. If you calculate cost-weighted distances using a landscape raster, make sure the coordinates in the xy file are in the same projection as the raster. Specify the projection in proj4 format using the \code{proj} argument.
 #' @param landscape A raster file in a format supported by GDAL listed here: \url{http://www.gdal.org/formats_list.html}.
-#' @param proj A projection in proj4 format. These can be easily found at \url{http://www.spatialreference.org/} by typing keywords for the projection of interest into the search box, clicking on the result that matches your criteria, and then selecting the proj4 format syntax. A projection is required for calculating cost-weighted distances, so if projection information is not included with your raster file and no projection is specified, the default of UTM Zone 10 NAD83 will be used. The cost-distance units in the output matrix will be in the same units as the projection (e.g. meters for UTM projections). 
+#' @param proj A projection in proj4 format. These can be found at \url{http://www.spatialreference.org/} by typing keywords for the projection of interest into the search box, clicking on the result that matches your criteria, and then selecting the proj4 format syntax. A projection is required for calculating cost-weighted distances. The distance units in the output matrix will be in the same units as the projection (e.g. meters for UTM projections). 
+#' 
 #' @return An NxN (N= sample size: i.e. nrow(xy)) matrix of pairwise Euclidean and/or effective landscape distances written to .csv comma delimited files with edmat or cdmat appended to the end of the \code{output_name}.
+#' 
 #' @examples 
 #' library(sGD)
 #' setwd("C:/Temp")
-#' landscape = system.file("extdata","sGD_demo_IBR_landscape.asc",package="sGD")
-#' output_name = "sGD_demo"     
-#' xy_file = system.file("extdata","sGD_demo_xy.csv",package="sGD") 
-#' proj = "+proj=utm +zone=10 +datum=NAD83"                    
-#' 
+#' output_name <- "sGD_demo" 
+#' xy_file <- system.file("extdata","sGD_demo_xy.csv",package="sGD")
+#' proj <- "+proj=utm +zone=10 +datum=NAD83"   
+#' points <- SpatialPoints(read.csv(xy_file)[,c(2,3)],proj4string=CRS(proj)) 
+#' landscape_ascii <- system.file("extdata","sGD_demo_IBR_landscape.asc",package="sGD") 
+#' landscape <- raster(landscape_ascii,crs=CRS(proj))
 #' distmat(xy_file,output_name,"ed")
-#' distmat(xy_file,output_name,"cd",proj,landscape)
-#' distmat(xy_file,output_name,c("ed","cd"),proj,landscape)
-distmat <- function(xy_file,output_name,method=c("ed","cd"),proj=NULL,landscape=NULL)
+#' distmat(xy_file,output_name,"cd",landscape)
+#' distmat(xy_file,output_name,c("ed","cd"),landscape)
+distmat <- function(points,output_name,method=c("ed","cd"),inraster=NULL)
 {
+  # check if the points are projected
+  if (is.na(crs(points)) == TRUE)
+    {
+      print("Warning: the input points have no projection defined.")
+    }  
+  
+  # determine appropriate number of decimal places depending on the input units
+  xrange = max(points@coords[,1]) - min(points@coords[,1]) 
+  yrange = max(points@coords[,2]) - min(points@coords[,2])
+  maxrange = max(xrange,yrange)
+  
+  if(maxrange>180) # if units are degrees, use many decimal places, otherwise, units of feet/meters only need 1 decimal place.
+  {
+    dec=1
+  } else {
+    dec=6
+  }
+    
   for (type in method)
   {
     if (type=="ed")
     {
-      # read points csv file and reformat to work with dist function
-      locs = read.csv(xy_file)[,c(2,3)]
-      
       # calculate costdistance and euclidean distance matrices - be careful with rounding if map units aren't meters
-      ed = round(full(dist(locs,method="euclidean")),0)
+      ed = round(full(dist(points@coords,method="euclidean")),dec)
       
       # write matrices to csv files
       write.table(ed,paste(output_name,"_edmat.csv"),row.names=F,col.names=F,sep=",")
@@ -372,27 +389,21 @@ distmat <- function(xy_file,output_name,method=c("ed","cd"),proj=NULL,landscape=
     
     if (type=="cd")
     {
-      # read resistance raster and project it
-      resistance <- raster(landscape)
-      if (is.null(proj) == TRUE)
+      # check to see if points and landscape are in the same projection
+      if (is.na(crs(inraster)) == TRUE)
       {
-        proj = "+proj=utm +zone=10 +datum=NAD83"       
-      }
-      
-      if (is.na(crs(resistance)) == TRUE)
+        print("Warning: the input raster has no projection defined.")
+      } else if(as.character(points@proj4string) != as.character(inraster@crs))
       {
-      projection(resistance) <- CRS(proj)
+        print("The projection of the points and landscape are not the same - please correct and rerun...")
       }
-      
-      # read points csv file and reformat to work with costDistance function
-      locs = SpatialPoints(read.csv(xy_file)[,c(2,3)],proj4string=crs(resistance))
       
       # calculate transition surface, and geocorrect it in E-W dimension
-      tr <- transition(resistance,transitionFunction = function(x) {1/mean(x)},directions=8) 
+      tr <- transition(inraster,transitionFunction = function(x) {1/mean(x)},directions=8) 
       trCorrC<-geoCorrection(tr,type="c",multpl=FALSE,scl=FALSE)
       
       # calculate costdistance and euclidean distance matrices - be careful with rounding if map units aren't meters
-      cd <- round(full(costDistance(trCorrC, locs)),0)
+      cd <- round(full(costDistance(trCorrC, points)),dec)
       
       # write matrix to csv files
       write.table(cd,paste(output_name,"_cdmat.csv"),row.names=F,col.names=F,sep=",")      

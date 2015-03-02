@@ -27,7 +27,37 @@ sGD(genepop_file, output_name, xy_file, dist_mat, radius, min_N, NS_ans, GD_ans,
 \item{NeEstimator_dir}{Path to the NeEstimator 2.0 directory. NeEstimator 2.0 is required only if NS_ans = T. It can be downloaded from \url{http://molecularfisherieslaboratory.com.au/neestimator-software}.}
 }
 \value{
-A comma delimited text file containing estimates of genetic diversity and neighborhood size for neighborhoods surrounding each sample location.
+sGD produces a comma delimited text file containing estimates of genetic diversity and neighborhood size for neighborhoods surrounding each sample location.
+
+Columns in the output text file include:
+
+\code{ID} - the ID of the individual at the neighborhood center, corresponding to the ID of the individual in the \code{xy_file}.
+
+\code{X} - the X coordinate of the neighborhood center.
+
+\code{Y} - the Y coordinate of the neighborhood center.
+
+\code{N} - the number of individuals within the neighborhood.
+
+\code{A} - the average number of alleles across all loci/individuals within the neighborhood.
+
+\code{Ap} - the proportion of alleles from the entire population that area actually present in the neighborhood.
+
+\code{Ar} - the allelic richness across all loci/individuals within the neighborhood.
+
+\code{He} - the average expected heterozygosity across all loci/individuals within the neighborhood.
+
+\code{Ho} - the average observed heterozygosity across all loci/individuals within the neighborhood.
+
+\code{FIS} - the average inbreeding coefficient across all loci/individuals within the neighborhood.
+
+\code{NS_ex0pct} - an estimate of the effective number of breeding indviduals (Wright's neighborhood size) present within the neighborhood, not exluding rare alleles that could bias the estimate.
+
+\code{NS_ex2pct} - an estimate of the effective number of breeding indviduals (Wright's neighborhood size) present within the neighborhood, exluding alleles with a frequency of 0.02 or less.
+
+\code{NS_ex5pct} - an estimate of the effective number of breeding indviduals (Wright's neighborhood size) present within the neighborhood, exluding alleles with a frequency of 0.05 or less.
+
+\code{NS_ex10pct} - an estimate of the effective number of breeding indviduals (Wright's neighborhood size) present within the neighborhood, exluding alleles with a frequency of 0.10 or less.
 }
 \description{
 Calculate spatially explicit indicies of genetic diversity and Wright's neighborhood size (NS).
@@ -51,6 +81,7 @@ sGD(genepop_file,output_name,xy_file,dist_mat,radius,min_N,NS_ans,GD_ans,NeEstim
 # specify landscape and sGD output
 landscape = raster(system.file("extdata","sGD_demo_IBR_landscape.asc",package="sGD"))
 sGD_output = read.csv(system.file("extdata","sGD_demo_output_sGD.csv",package="sGD"))
+
 # Convert raster to dataframe for ggplot
 landscape.p <- rasterToPoints(landscape)
 landscape.df <- data.frame(landscape.p)
