@@ -8,7 +8,7 @@ sGD(genind_obj, output_name, xy, dist_mat, radius, min_N, NS_ans, GD_ans,
   NeEstimator_dir = NULL, NHmat_ans = FALSE, genout_ans = FALSE)
 }
 \arguments{
-\item{genind_obj}{A genind object containing the indivual genotypes.}
+\item{genind_obj}{A genind object (created by the adegenet package function import2genind or similar methods) containing individual genotypes.}
 
 \item{output_name}{A character string that will be appended to the front of the output filename (will end with "_sGD.csv").}
 
@@ -22,7 +22,7 @@ sGD(genind_obj, output_name, xy, dist_mat, radius, min_N, NS_ans, GD_ans,
 
 \item{NS_ans}{Boolean (T or F) answer to whether you want sGD to calculate Wright's neighborhood size.}
 
-\item{GD_ans}{Boolean (T or F) answer to whether you want sGD to calculate genetic diversity indices. This calculation can take a long time depending on how many individuals are in your sample and the \code{radius} of the neighborhood..}
+\item{GD_ans}{Boolean (T or F) answer to whether you want sGD to calculate genetic diversity indices. This calculation can take a long time depending on how many individuals are in your sample and the \code{radius} of the neighborhood.}
 
 \item{NeEstimator_dir}{Path to the NeEstimator 2.0 directory. NeEstimator 2.0 is required only if NS_ans = T. It can be downloaded from \url{http://molecularfisherieslaboratory.com.au/neestimator-software}.}
 

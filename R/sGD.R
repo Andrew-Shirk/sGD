@@ -1,6 +1,6 @@
 #' Calculate spatially explicit indicies of genetic diversity and Wright's neighborhood size (NS).
 #' 
-#' @param genepop_file The path to a genotype file in genepop format (with a .gen extension).
+#' @param genind_obj A genind object (created by the adegenet package function import2genind or similar methods) containing individual genotypes.
 #' @param output_name A character string that will be appended to the front of the output filename (will end with "_sGD.csv").
 #' @param xy A dataframe containing 3 columns in the following order: individual IDs, X coordinates, and Y coordinates.
 #' @param dist_mat An NxN (N= sample size) matrix of pairwise landscape distances (Euclidean or effective).
