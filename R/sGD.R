@@ -7,14 +7,14 @@
 #' @param radius The radius of the genetic neighborhood in the same units as \code{dist_mat}.
 #' @param min_N The minimum sample size per neighborhood for indices to be calculated. NA is returned for neighborhoods < \code{min_N}.
 #' @param NS_ans Boolean (T or F) answer to whether you want sGD to calculate Wright's neighborhood size.
-#' @param GD_ans Boolean (T or F) answer to whether you want sGD to calculate genetic diversity indices. This calculation can take a long time depending on how many individuals are in your sample and the \code{radius} of the neighborhood..
+#' @param GD_ans Boolean (T or F) answer to whether you want sGD to calculate genetic diversity indices. This calculation can take a long time depending on how many individuals are in your sample and the \code{radius} of the neighborhood.
 #' @param NeEstimator_dir Path to the NeEstimator 2.0 directory. NeEstimator 2.0 is required only if NS_ans = T. It can be downloaded from \url{http://molecularfisherieslaboratory.com.au/neestimator-software}.
 #' @param NHmat_ans Boolean (T or F) answer to whether you want sGD to write a matrix defining neighborhood membership. For each row/column of the matrix, a value of 1 occurs at the indices of all individuals in the neighborhood and a value of 0 occurs for all individuals outside the neighborhood.
 #' @param genout_ans Boolean (T or F) answer to whether you want sGD to write a genepop file containing the genotypes for all neighborhoods to the workind directory. 
 #' 
 #' @return sGD produces a comma delimited text file containing estimates of genetic diversity and neighborhood size for neighborhoods surrounding each sample location.
 #' @return Columns in the output text file include:
-#' @return \code{ID} - the ID of the individual at the neighborhood center, corresponding to the ID of the individual in the \code{xy_file}.
+#' @return \code{Indiv_ID} - the ID of the individual at the neighborhood center, taken from individual's ID in the \code{xy_file}.
 #' @return \code{X} - the X coordinate of the neighborhood center.
 #' @return \code{Y} - the Y coordinate of the neighborhood center.
 #' @return \code{N} - the number of individuals within the neighborhood.

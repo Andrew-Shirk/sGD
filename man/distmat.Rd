@@ -2,38 +2,38 @@
 % Please edit documentation in R/sGD.R
 \name{distmat}
 \alias{distmat}
-\title{Calculate a pairwise landscape distance matrix (Euclidian or cost-distance).}
+\title{Calculate a pairwise landscape distance matrix (Euclidian or cost-distance). Make sure the projection of the inputs is specified correctly by the \code{proj} argument. If you use a landscape raster to calculate cost-weighted distances, it must match the projection of the xy_file points.}
 \usage{
-distmat(xy_file, output_name, method = c("ed", "cd"), proj = NULL,
-  landscape = NULL)
+distmat(points, output_name, method = c("ed", "cd"), inraster = NULL)
 }
 \arguments{
-\item{xy_file}{A comma delimited text file containing columns for individual IDs, X coordinate, and Y coordinates. The coordinates in the xy file must be in the same projection as the coordinates of the raster if you calculate cost-weighted distances. Specify the projection in proj4 format using the \code{proj} parameter.}
+\item{points}{A comma delimited text file containing columns for individual ID, X coordinate, and Y coordinate. If you calculate cost-weighted distances using a landscape raster, make sure the coordinates in the xy file are in the same projection as the raster. Specify the projection in proj4 format using the \code{proj} argument.}
 
 \item{output_name}{A character string that will be appended to the front of the output filenames.}
 
 \item{method}{Specify the type of distance matrix to be produced, using "ed" for Euclidean distance and "cd" for cost-weighted (i.e. effective) distance or c("ed","cd") for both.}
 
-\item{proj}{A projection in proj4 format. These can be easily found at \url{http://www.spatialreference.org/} by typing keywords for the projection of interest into the search box, clicking on the result that matches your criteria, and then selecting the proj4 format syntax. A projection is required for calculating cost-weighted distances, so if projection information is not included with your raster file and no projection is specified, the default of UTM Zone 10 NAD83 will be used. The cost-distance units in the output matrix will be in the same units as the projection (e.g. meters for UTM projections).}
-
 \item{landscape}{A raster file in a format supported by GDAL listed here: \url{http://www.gdal.org/formats_list.html}.}
+
+\item{proj}{A projection in proj4 format. These can be found at \url{http://www.spatialreference.org/} by typing keywords for the projection of interest into the search box, clicking on the result that matches your criteria, and then selecting the proj4 format syntax. A projection is required for calculating cost-weighted distances. The distance units in the output matrix will be in the same units as the projection (e.g. meters for UTM projections).}
 }
 \value{
 An NxN (N= sample size: i.e. nrow(xy)) matrix of pairwise Euclidean and/or effective landscape distances written to .csv comma delimited files with edmat or cdmat appended to the end of the \code{output_name}.
 }
 \description{
-Calculate a pairwise landscape distance matrix (Euclidian or cost-distance).
+Calculate a pairwise landscape distance matrix (Euclidian or cost-distance). Make sure the projection of the inputs is specified correctly by the \code{proj} argument. If you use a landscape raster to calculate cost-weighted distances, it must match the projection of the xy_file points.
 }
 \examples{
 library(sGD)
 setwd("C:/Temp")
-landscape = system.file("extdata","sGD_demo_IBR_landscape.asc",package="sGD")
-output_name = "sGD_demo"
-xy_file = system.file("extdata","sGD_demo_xy.csv",package="sGD")
-proj = "+proj=utm +zone=10 +datum=NAD83"
-
+output_name <- "sGD_demo"
+xy_file <- system.file("extdata","sGD_demo_xy.csv",package="sGD")
+proj <- "+proj=utm +zone=10 +datum=NAD83"
+points <- SpatialPoints(read.csv(xy_file)[,c(2,3)],proj4string=CRS(proj))
+landscape_ascii <- system.file("extdata","sGD_demo_IBR_landscape.asc",package="sGD")
+landscape <- raster(landscape_ascii,crs=CRS(proj))
 distmat(xy_file,output_name,"ed")
-distmat(xy_file,output_name,"cd",proj,landscape)
-distmat(xy_file,output_name,c("ed","cd"),proj,landscape)
+distmat(xy_file,output_name,"cd",landscape)
+distmat(xy_file,output_name,c("ed","cd"),landscape)
 }
 
