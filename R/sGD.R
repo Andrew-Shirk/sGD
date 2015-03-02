@@ -2,7 +2,7 @@
 #' 
 #' @param genepop_file The path to a genotype file in genepop format (with a .gen extension).
 #' @param output_name A character string that will be appended to the front of the output filename (will end with "_sGD.csv").
-#' @param xy_file A comma delimited file containing columns for individual IDs, X coordinates, and Y coordinates.
+#' @param xy A dataframe containing 3 columns in the following order: individual IDs, X coordinates, and Y coordinates.
 #' @param dist_mat An NxN (N= sample size) matrix of pairwise landscape distances (Euclidean or effective).
 #' @param radius The radius of the genetic neighborhood in the same units as \code{dist_mat}.
 #' @param min_N The minimum sample size per neighborhood for indices to be calculated. NA is returned for neighborhoods < \code{min_N}.
@@ -36,15 +36,15 @@
 #' genepop_file <- system.file("extdata","sGD_demo_genepop.gen",package="sGD") 
 #' genind_obj = read.genepop(genepop_file,quiet=T)
 #' output_name <- "demo"     
-#' xy_file <- system.file("extdata","sGD_demo_xy.csv",package="sGD")                  
-#' dist_mat <- system.file("extdata","sGD_demo_cdmat.csv",package="sGD")  
+#' xy = read.csv(system.file("extdata","sGD_demo_xy.csv",package="sGD"))
+#' dist_mat = as.matrix(read.csv(system.file("extdata","sGD_demo_cdmat.csv",package="sGD") ,header=F)) 
 #' radius <- 16238 # for this demo, units are in meters
 #' min_N <- 20
 #' NS_ans <- TRUE
 #' GD_ans <- TRUE
 #' NeEstimator_dir <- "C:/NeEstimator"
 #' 
-#' sGD(genind_obj,output_name,xy_file,dist_mat,radius,min_N,NS_ans=TRUE,GD_ans=TRUE,NeEstimator_dir,NHmat_ans=FALSE,genout_ans=FALSE)
+#' sGD(genind_obj,output_name,xy,dist_mat,radius,min_N,NS_ans=TRUE,GD_ans=TRUE,NeEstimator_dir,NHmat_ans=FALSE,genout_ans=FALSE)
 #' 
 #' # specify landscape and sGD output 
 #' landscape <- raster(system.file("extdata","sGD_demo_IBR_landscape.asc",package="sGD"))
@@ -68,12 +68,9 @@
 #'        panel.background = element_blank()) 
 
 
-sGD <- function(genind_obj,output_name,xy_file,dist_mat,radius,min_N,NS_ans,GD_ans,NeEstimator_dir=NULL,NHmat_ans=FALSE,genout_ans=FALSE)
+sGD <- function(genind_obj,output_name,xy,dist_mat,radius,min_N,NS_ans,GD_ans,NeEstimator_dir=NULL,NHmat_ans=FALSE,genout_ans=FALSE)
 {
   # do initial error checking
-  if(file.exists(genepop_file)==F){stop("Cannot read genepop_file. Is the path and filename correct?")}  
-  if(file.exists(xy_file)==F){stop("Cannot read xy file. Is the path and filename correct?")} 
-  if(file.exists(dist_mat)==F){stop("Cannot read dist_mat. Is the path and filename correct?")} 
   if (NS_ans == F & GD_ans == F)
   {
     stop("At least one of the following must be TRUE: NS_ans or GD_ans")
@@ -81,18 +78,9 @@ sGD <- function(genind_obj,output_name,xy_file,dist_mat,radius,min_N,NS_ans,GD_a
   
   # read input files and convert to required format
   cat ("Reading input files...\n")
-  
-  genind_obj = read.genepop(genepop_file,quiet=T)
-  
-  sink(file=file()) ## silence genind output 
   hierf_dat = genind2hierfstat(genind_obj)
   df_dat = genind2df(genind_obj)
   df_dat$pop = as.character(df_dat$pop)
-  sink() ## undo silencing
-  close(con=file())
-  
-  xy = read.csv(xy_file)
-  dist_mat = read.csv(dist_mat,header=F)
   
   # set parameters
   numloci = length(genind_obj@loc.names)
@@ -162,72 +150,42 @@ sGD <- function(genind_obj,output_name,xy_file,dist_mat,radius,min_N,NS_ans,GD_a
   }
   
   NH_summary = data.frame(genind_obj@ind.names,xy[,c(2,3)],neighborhood_N,stringsAsFactors=F)
-  names(NH_summary) = c("ID","X","Y","N")
+  names(NH_summary) = c("Indiv_ID","X","Y","N")
 
   if (GD_ans == T)
   {
-    # Calculate genetic diversity indices and HWE
+    # Calculate genetic diversity indices
     cat("Calculating genetic diversity indices for neighborhoods...\n")
   
     NH_dat = import2genind(NH_genepop_filename,quiet=T)
     NH_hierf_dat = genind2hierfstat(NH_dat)
-    #NH_df_dat = genind2df(NH_dat)
 
     NH_A = nb.alleles(NH_hierf_dat)
-    NH_Ar = allelic.richness(NH_hierf_dat)$Ar
-    NH_Ap = colSums(NH_A)/sum(NH_dat@loc.nall)
+    NH_Ar = round(colMeans(allelic.richness(NH_hierf_dat)$Ar),4)
+    NH_Ap = round(colSums(NH_A)/sum(NH_dat@loc.nall),4)
+    NH_A = round(colMeans(NH_A),4)
     NH_stats = basic.stats(NH_hierf_dat,digits=3)
-    NH_Ho = NH_stats$Ho
-    NH_Hs = NH_stats$Hs
-    NH_FIS = NH_stats$Fis
+    NH_Ho = round(colMeans(NH_stats$Ho),4)
+    NH_Hs = round(colMeans(NH_stats$Hs),4)
+    NH_FIS = round(1 - NH_Ho/NH_Hs,4)
     
-    #sink(file=file()) ## silence genind output 
-    #NH_HWE = HWE.test(NH_dat)
-    #sink() ## undo silencing
+    NH_summary$A = NA
+    NH_summary$Ap = NA
+    NH_summary$Ar = NA
+    NH_summary$He = NA
+    NH_summary$Ho = NA
+    NH_summary$FIS = NA
     
-    A = c()
-    Ap = c()
-    Ar = c()
-    He = c()
-    Ho = c()
-    FIS = c()
-    #HWE = c()
-    
-    counter=1 # counter is needed because if NAs exist, nrow(NH_summary) is > length(GD metrics)
-        
-    for (i in 1:nrow(NH_summary))
-    {
-      
-      if(NH_summary$N[i]<min_N)
-      {
-        A[i] = NA
-        Ap[i] = NA
-        Ar[i] = NA
-        He[i] = NA
-        Ho[i] = NA
-        FIS[i] = NA
-        #HWE[i] = NA
-      }
-      
-      else
-      {
-        A[i] = mean(NH_A[,counter])
-        Ap[i] = NH_Ap[counter]
-        Ar[i] = mean(NH_Ar[,counter])
-        He[i] = mean(NH_Hs[,counter])
-        Ho[i] = mean(NH_Ho[,counter])
-        FIS[i] = mean(NH_FIS[,counter])
-        #HWE[i] = mean(NH_HWE[counter,])
-        counter = counter + 1  
-      }
-    } 
-    
-    # append GD stats to NH_summary
-    NH_summary = data.frame(data.frame(NH_summary,A,Ap,Ar,He,Ho,FIS))
+    NH_summary$A[valid_pops] = NH_A
+    NH_summary$Ap[valid_pops] = NH_Ap
+    NH_summary$Ar[valid_pops] = NH_Ar
+    NH_summary$He[valid_pops] = NH_Hs
+    NH_summary$Ho[valid_pops] = NH_Ho
+    NH_summary$FIS[valid_pops] = NH_FIS
     
     # show histograms of FIS/HWE
     hist(NH_summary$FIS,xlab=paste("FIS (median =",
-          median(na.omit(NH_summary$FIS)),")"),main=paste("Histogram of FIS (radius =",radius,")"))   
+          sprintf("%f",median(na.omit(NH_summary$FIS))),")"),main=paste("Histogram of FIS (radius =",radius,")"))   
   }
     
   if (NS_ans == T)
@@ -270,48 +228,22 @@ sGD <- function(genind_obj,output_name,xy_file,dist_mat,radius,min_N,NS_ans,GD_a
     }
     
     # read the Ne results file
-    Ne_results = readLines("Ne2_output.txt")
-    LD_Ne_lines = grep("Estimated Ne",Ne_results)
-    
-    # create empty vectors to hold the Ne estimates
-    NS_ex5pct = c()
-    NS_ex2pct = c()
-    NS_ex10pct = c()
-    NS_ex0pct = c()
-    
-    counter = 1
-    
-    # populate empty vectors with estimates if N > min_N
-    for (i in 1:nrow(NH_summary))
-    {
-      if(NH_summary$N[i]<min_N)
-      {
-        NS_ex5pct[i] = NA
-        NS_ex2pct[i] = NA
-        NS_ex10pct[i] = NA
-        NS_ex0pct[i] = NA    
-      }
+    LDNe_output = readLines("Ne2_output.txt")
+    LDNe_datalines = grep("Estimated Ne",LDNe_output)
+    LDNe_estimates = data.frame(matrix(as.numeric(unlist(strsplit(LDNe_output[LDNe_datalines], "\\s+"))),nrow=npops,ncol=7,byrow=T))[4:7]
+    names(LDNe_estimates) = c("NS_ex10pct","NS_ex5pct","NS_ex2pct","NS_ex0pct")
       
-      else
-      {
-        LD_Ne_line = Ne_results[LD_Ne_lines[counter]]
-        NS_ex5pct[i] = strsplit(LD_Ne_line, "\\s+")[[1]][4]
-        NS_ex2pct[i] = strsplit(LD_Ne_line, "\\s+")[[1]][5] 
-        NS_ex10pct[i] = strsplit(LD_Ne_line, "\\s+")[[1]][6]
-        NS_ex0pct[i] = strsplit(LD_Ne_line, "\\s+")[[1]][7]    
-        counter = counter + 1  
-      }
-    }
+    # create columns to hold the Ne estimates and assign default value of N
+    NH_summary$NS_ex0pct = NA
+    NH_summary$NS_ex2pct = NA
+    NH_summary$NS_ex5pct = NA
+    NH_summary$NS_ex10pct = NA
     
-    # convert text to numeric
-    NS_ex5pct = as.numeric(NS_ex5pct)
-    NS_ex2pct = as.numeric(NS_ex2pct)
-    NS_ex10pct = as.numeric(NS_ex10pct)
-    NS_ex0pct = as.numeric(NS_ex0pct)
-    
-    # append Ne estimates to NH_summary    
-    NH_summary = data.frame(NH_summary,NS_ex0pct,NS_ex2pct,NS_ex5pct,NS_ex10pct)
-    
+    NH_summary$NS_ex0pct[valid_pops] = LDNe_estimates$NS_ex0pct
+    NH_summary$NS_ex2pct[valid_pops] = LDNe_estimates$NS_ex2pct
+    NH_summary$NS_ex5pct[valid_pops] = LDNe_estimates$NS_ex5pct
+    NH_summary$NS_ex10pct[valid_pops] = LDNe_estimates$NS_ex10pct
+
     # remove temporary files
     file.remove("Ne2_input.txt")
     file.remove("Ne2_output.txt")
