@@ -267,13 +267,12 @@ sGD <- function(genind_obj,output_name,xy,dist_mat,radius,min_N,NS_ans,GD_ans,Ne
 }
 
 
-#' Calculate a pairwise landscape distance matrix (Euclidian or cost-distance). Make sure the projection of the inputs is specified correctly by the \code{proj} argument. If you use a landscape raster to calculate cost-weighted distances, it must match the projection of the xy_file points.
+#' Calculate a pairwise landscape distance matrix (Euclidian or cost-distance).  
 #' 
-#' @param method Specify the type of distance matrix to be produced, using "ed" for Euclidean distance and "cd" for cost-weighted (i.e. effective) distance or c("ed","cd") for both. 
-#' @param output_name A character string that will be appended to the front of the output filenames.
-#' @param points A comma delimited text file containing columns for individual ID, X coordinate, and Y coordinate. If you calculate cost-weighted distances using a landscape raster, make sure the coordinates in the xy file are in the same projection as the raster. Specify the projection in proj4 format using the \code{proj} argument.
-#' @param landscape A raster file in a format supported by GDAL listed here: \url{http://www.gdal.org/formats_list.html}.
-#' @param proj A projection in proj4 format. These can be found at \url{http://www.spatialreference.org/} by typing keywords for the projection of interest into the search box, clicking on the result that matches your criteria, and then selecting the proj4 format syntax. A projection is required for calculating cost-weighted distances. The distance units in the output matrix will be in the same units as the projection (e.g. meters for UTM projections). 
+#' @param method Specify the type of distance matrix to be produced, using "ed" for Euclidean distance and "cd" for cost-weighted (i.e. effective) distance or c("ed","cd") for both. If you calculate cost-weighted distances, make sure the \code{points} projection is the same as the \code{landscape} raster.
+#' @param output_name A character string that will be appended to the beginning of the output filename.
+#' @param points An object of class SpatialPoints (see raster package).
+#' @param landscape An object of class RasterLayer (see raster package)
 #' 
 #' @return An NxN (N= sample size: i.e. nrow(xy)) matrix of pairwise Euclidean and/or effective landscape distances written to .csv comma delimited files with edmat or cdmat appended to the end of the \code{output_name}.
 #' 
