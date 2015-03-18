@@ -9,8 +9,8 @@
 #' @param NS_ans Boolean (T or F) answer to whether you want sGD to calculate Wright's neighborhood size.
 #' @param GD_ans Boolean (T or F) answer to whether you want sGD to calculate genetic diversity indices. This calculation can take a long time depending on how many individuals are in your sample and the \code{radius} of the neighborhood.
 #' @param NeEstimator_dir Path to the NeEstimator 2.0 directory. NeEstimator 2.0 is required only if NS_ans = T. It can be downloaded from \url{http://molecularfisherieslaboratory.com.au/neestimator-software}.
-#' @param NHmat_ans Boolean (T or F) answer to whether you want sGD to write a matrix defining neighborhood membership. For each row/column of the matrix, a value of 1 occurs at the indices of all individuals in the neighborhood and a value of 0 occurs for all individuals outside the neighborhood.
-#' @param genout_ans Boolean (T or F) answer to whether you want sGD to write a genepop file containing the genotypes for all neighborhoods to the workind directory. 
+#' @param NHmat_ans Boolean (T or F) answer to whether you want sGD to write a matrix defining neighborhood membership. For each row/column of the matrix, a value of 1 occurs at the indices of all individuals inside the neighborhood and a value of 0 occurs for all individuals outside the neighborhood.
+#' @param genout_ans Boolean (T or F) answer to whether you want sGD to write a genepop file containing the genotypes for all neighborhoods to the working directory. 
 #' 
 #' @return sGD produces a comma delimited text file containing estimates of genetic diversity and neighborhood size for neighborhoods surrounding each sample location.
 #' @return Columns in the output text file include:
@@ -286,10 +286,10 @@ sGD <- function(genind_obj,output_name,xy,dist_mat,radius,min_N,NS_ans,GD_ans,Ne
 #' points <- SpatialPoints(read.csv(xy_file)[,c(2,3)],proj4string=CRS(proj)) 
 #' landscape_ascii <- system.file("extdata","sGD_demo_IBR_landscape.asc",package="sGD") 
 #' landscape <- raster(landscape_ascii,crs=CRS(proj))
-#' distmat(xy_file,output_name,"ed")
-#' distmat(xy_file,output_name,"cd",landscape)
-#' distmat(xy_file,output_name,c("ed","cd"),landscape)
-distmat <- function(points,output_name,method=c("ed","cd"),inraster=NULL)
+#' distmat(points,output_name,"ed")
+#' distmat(points,output_name,"cd",landscape)
+#' distmat(points,output_name,c("ed","cd"),landscape)
+distmat <- function(points,output_name,method=c("ed","cd"),landscape=NULL)
 {
   # check if the points are projected
   if (is.na(crs(points)) == TRUE)
@@ -323,16 +323,16 @@ distmat <- function(points,output_name,method=c("ed","cd"),inraster=NULL)
     if (type=="cd")
     {
       # check to see if points and landscape are in the same projection
-      if (is.na(crs(inraster)) == TRUE)
+      if (is.na(crs(landscape)) == TRUE)
       {
         print("Warning: the input raster has no projection defined.")
-      } else if(as.character(points@proj4string) != as.character(inraster@crs))
+      } else if(as.character(points@proj4string) != as.character(landscape@crs))
       {
         print("The projection of the points and landscape are not the same - please correct and rerun...")
       }
       
       # calculate transition surface, and geocorrect it in E-W dimension
-      tr <- transition(inraster,transitionFunction = function(x) {1/mean(x)},directions=8) 
+      tr <- transition(landscape,transitionFunction = function(x) {1/mean(x)},directions=8) 
       trCorrC<-geoCorrection(tr,type="c",multpl=FALSE,scl=FALSE)
       
       # calculate costdistance and euclidean distance matrices - be careful with rounding if map units aren't meters
