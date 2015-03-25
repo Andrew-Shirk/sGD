@@ -39,25 +39,25 @@ neighborhood size in continuous populations. Frontiers in Ecology and Evolution 
 Shirk, A.J. and Cushman, S. A. 2011. sGD: software for estimating spatially explicit indices of genetic diversity. Molecular Ecology Resources, 11(5), 922-934.
 }
 \examples{
-# Run sGD
+#Make sure your paths are correct for your operating system (e.g. in linux, it might be "/home/yourname/Temp")
 library(sGD)
 setwd("C:/Temp") # the output file will be written to the working directory
-genepop_file = system.file("extdata","sGD_demo_genepop.gen",package="sGD") 
-output_name = "demo"     
-xy_file = system.file("extdata","sGD_demo_xy.csv",package="sGD")                  
-dist_mat = system.file("extdata","sGD_demo_cdmat.csv",package="sGD")  
-radius = 16238 # for this demo, units are in meters
-min_N = 20
-NS_ans = TRUE
-GD_ans = TRUE
-NeEstimator_dir = "C:/NeEstimator"
+genepop_file <- system.file("extdata","sGD_demo_genepop.gen",package="sGD") 
+genind_obj = read.genepop(genepop_file,quiet=T)
+output_name <- "demo"     
+xy = read.csv(system.file("extdata","sGD_demo_xy.csv",package="sGD"))
+dist_mat = as.matrix(read.csv(system.file("extdata","sGD_demo_cdmat.csv",package="sGD") ,header=F)) 
+radius <- 16238 # for this demo, units are in meters
+min_N <- 20
+NS_ans <- TRUE
+GD_ans <- TRUE
+NeEstimator_dir <- "C:/NeEstimator"
 
-sGD(genepop_file,output_name,xy_file,dist_mat,radius,min_N,NS_ans,GD_ans,NeEstimator_dir)
+sGD(genind_obj,output_name,xy,dist_mat,radius,min_N,NS_ans=TRUE,GD_ans=TRUE,NeEstimator_dir,NHmat_ans=FALSE,genout_ans=FALSE)
 
 # specify landscape and sGD output 
-landscape = raster(system.file("extdata","sGD_demo_IBR_landscape.asc",package="sGD"))
-sGD_output = read.csv(system.file("extdata","sGD_demo_output_sGD.csv",package="sGD"))
-
+landscape <- raster(system.file("extdata","sGD_demo_IBR_landscape.asc",package="sGD"))
+sGD_output <- read.csv(system.file("extdata","sGD_demo_output_sGD.csv",package="sGD"))
 # Convert raster to dataframe for ggplot 
 landscape.p <- rasterToPoints(landscape)
 landscape.df <- data.frame(landscape.p)
@@ -67,22 +67,23 @@ colnames(landscape.df) <- c("X", "Y", "Resistance")
 library(ggplot2)
 ggplot()  +
 geom_raster(data=landscape.df,aes(x=X,y=Y,fill=Resistance),alpha=I(0.5)) +
-  scale_fill_gradient(low="black", high="lightgrey") + 
-  geom_point(data=sGD_output, aes(x=X, y=Y,color=Ap),size=5) + 
-  scale_color_gradient(low="red", high="green",na.value = "white") + 
-  theme(panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        panel.background = element_blank()) 
+scale_fill_gradient(low="black", high="lightgrey") + 
+geom_point(data=sGD_output, aes(x=X, y=Y,color=Ap),size=5) + 
+scale_color_gradient(low="red", high="green",na.value = "white") + 
+theme(panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.background = element_blank()) 
 
 # calculate landscape distance matrices based on Euclidean of cost-weighted distance
 library(sGD)
 setwd("C:/Temp")
-landscape = system.file("extdata","sGD_demo_IBR_landscape.asc",package="sGD")
-output_name = "sGD_demo"
-xy_file = system.file("extdata","sGD_demo_xy.csv",package="sGD")
-proj = "+proj=utm +zone=10 +datum=NAD83"
-
-distmat(xy_file,output_name,"ed")
-distmat(xy_file,output_name,"cd",proj,landscape)
-distmat(xy_file,output_name,c("ed","cd"),proj,landscape)
+output_name <- "sGD_demo" 
+xy_file <- system.file("extdata","sGD_demo_xy.csv",package="sGD")
+proj <- "+proj=utm +zone=10 +datum=NAD83"   
+points <- SpatialPoints(read.csv(xy_file)[,c(2,3)],proj4string=CRS(proj)) 
+landscape_ascii <- system.file("extdata","sGD_demo_IBR_landscape.asc",package="sGD") 
+landscape <- raster(landscape_ascii,crs=CRS(proj))
+distmat(points,output_name,"ed")
+distmat(points,output_name,"cd",landscape)
+distmat(points,output_name,c("ed","cd"),landscape)
 }

@@ -4,13 +4,12 @@
 \alias{sGD}
 \title{Calculate spatially explicit indicies of genetic diversity and Wright's neighborhood size (NS).}
 \usage{
-sGD(genind_obj, output_name, xy, dist_mat, radius, min_N, NS_ans, GD_ans,
-  NeEstimator_dir = NULL, NHmat_ans = FALSE, genout_ans = FALSE)
+sGD(genind_obj, xy, dist_mat, radius, min_N, NS_ans = F, GD_ans = T,
+  NHmat_ans = F, genout_ans = F, file_name = NULL,
+  NeEstimator_dir = NULL)
 }
 \arguments{
 \item{genind_obj}{A genind object (created by the adegenet package function import2genind or similar methods) containing individual genotypes.}
-
-\item{output_name}{A character string that will be appended to the front of the output filename (will end with "_sGD.csv").}
 
 \item{xy}{A dataframe containing 3 columns in the following order: individual IDs, X coordinates, and Y coordinates.}
 
@@ -24,16 +23,18 @@ sGD(genind_obj, output_name, xy, dist_mat, radius, min_N, NS_ans, GD_ans,
 
 \item{GD_ans}{Boolean (T or F) answer to whether you want sGD to calculate genetic diversity indices. This calculation can take a long time depending on how many individuals are in your sample and the \code{radius} of the neighborhood.}
 
+\item{NHmat_ans}{Boolean (T or F) answer to whether you want sGD to write a matrix defining neighborhood membership. For each row/column of the matrix, a value of 1 occurs at the indices of all individuals inside the neighborhood and a value of 0 occurs for all individuals outside the neighborhood.}
+
+\item{genout_ans}{Boolean (T or F) answer to whether you want sGD to write a genepop file containing the genotypes for all neighborhoods to the working directory.}
+
+\item{file_name}{(optional) A character string that will be appended to the front of the output filename (will end with "_sGD.csv"). If none specified, no output file will be written.}
+
 \item{NeEstimator_dir}{Path to the NeEstimator 2.0 directory. NeEstimator 2.0 is required only if NS_ans = T. It can be downloaded from \url{http://molecularfisherieslaboratory.com.au/neestimator-software}.}
-
-\item{NHmat_ans}{Boolean (T or F) answer to whether you want sGD to write a matrix defining neighborhood membership. For each row/column of the matrix, a value of 1 occurs at the indices of all individuals in the neighborhood and a value of 0 occurs for all individuals outside the neighborhood.}
-
-\item{genout_ans}{Boolean (T or F) answer to whether you want sGD to write a genepop file containing the genotypes for all neighborhoods to the workind directory.}
 }
 \value{
-sGD produces a comma delimited text file containing estimates of genetic diversity and neighborhood size for neighborhoods surrounding each sample location.
+sGD returns a data frame containing estimates of genetic diversity and/or neighborhood size for neighborhoods surrounding each sample location.
 
-Columns in the output text file include:
+Variables in the output data frame include:
 
 \code{Indiv_ID} - the ID of the individual at the neighborhood center, taken from individual's ID in the \code{xy_file}.
 
@@ -71,18 +72,14 @@ Calculate spatially explicit indicies of genetic diversity and Wright's neighbor
 library(sGD)
 setwd("C:/Temp") # the output file will be written to the working directory
 genepop_file <- system.file("extdata","sGD_demo_genepop.gen",package="sGD")
-genind_obj = read.genepop(genepop_file,quiet=T)
-output_name <- "demo"
+genind_obj <- read.genepop(genepop_file,quiet=T)
 xy = read.csv(system.file("extdata","sGD_demo_xy.csv",package="sGD"))
-dist_mat = as.matrix(read.csv(system.file("extdata","sGD_demo_cdmat.csv",package="sGD") ,header=F))
+dist_mat <- as.matrix(read.csv(system.file("extdata","sGD_demo_cdmat.csv",package="sGD") ,header=F))
 radius <- 16238 # for this demo, units are in meters
 min_N <- 20
-NS_ans <- TRUE
-GD_ans <- TRUE
 NeEstimator_dir <- "C:/NeEstimator"
 
-sGD(genind_obj,output_name,xy,dist_mat,radius,min_N,NS_ans=TRUE,GD_ans=TRUE,NeEstimator_dir,NHmat_ans=FALSE,genout_ans=FALSE)
-
+sGD_output = sGD(genind_obj,xy,dist_mat,radius,min_N,NS_ans=TRUE,GD_ans=F,NHmat_ans=T,genout_ans=T,file_name=NULL,NeEstimator_dir=NULL)
 # specify landscape and sGD output
 landscape <- raster(system.file("extdata","sGD_demo_IBR_landscape.asc",package="sGD"))
 sGD_output <- read.csv(system.file("extdata","sGD_demo_output_sGD.csv",package="sGD"))
