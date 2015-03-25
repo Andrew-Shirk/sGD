@@ -12,7 +12,7 @@ distmat(sp_points, method = c("ed", "cd"), file_name = NULL,
 
 \item{method}{Specify the type of distance matrix to be produced, using "ed" for Euclidean distance and "cd" for cost-weighted (i.e. effective) distance or c("ed","cd") for both. If you calculate cost-weighted distances, make sure the \code{points} projection is the same as the \code{landscape} raster.}
 
-\item{file_name}{A character string that will be appended to the beginning of the output filename.}
+\item{file_name}{(optional) A character string that will be appended to the beginning of the output filename. If no name is specified, no file will be written to the working directory.}
 
 \item{landscape}{An object of class RasterLayer (see raster package)}
 }

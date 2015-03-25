@@ -75,7 +75,7 @@ genepop_file <- system.file("extdata","sGD_demo_genepop.gen",package="sGD")
 genind_obj <- read.genepop(genepop_file,quiet=T)
 xy = read.csv(system.file("extdata","sGD_demo_xy.csv",package="sGD"))
 dist_mat <- as.matrix(read.csv(system.file("extdata","sGD_demo_cdmat.csv",package="sGD") ,header=F))
-radius <- 16238 # for this demo, units are in meters
+radius <- 18000 # for this demo, units are in meters
 min_N <- 20
 NeEstimator_dir <- "C:/NeEstimator"
 

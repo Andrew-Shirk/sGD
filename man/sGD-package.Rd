@@ -39,21 +39,17 @@ neighborhood size in continuous populations. Frontiers in Ecology and Evolution 
 Shirk, A.J. and Cushman, S. A. 2011. sGD: software for estimating spatially explicit indices of genetic diversity. Molecular Ecology Resources, 11(5), 922-934.
 }
 \examples{
-#Make sure your paths are correct for your operating system (e.g. in linux, it might be "/home/yourname/Temp")
 library(sGD)
 setwd("C:/Temp") # the output file will be written to the working directory
 genepop_file <- system.file("extdata","sGD_demo_genepop.gen",package="sGD") 
-genind_obj = read.genepop(genepop_file,quiet=T)
-output_name <- "demo"     
+genind_obj <- read.genepop(genepop_file,quiet=T)
 xy = read.csv(system.file("extdata","sGD_demo_xy.csv",package="sGD"))
-dist_mat = as.matrix(read.csv(system.file("extdata","sGD_demo_cdmat.csv",package="sGD") ,header=F)) 
+dist_mat <- as.matrix(read.csv(system.file("extdata","sGD_demo_cdmat.csv",package="sGD") ,header=F)) 
 radius <- 16238 # for this demo, units are in meters
 min_N <- 20
-NS_ans <- TRUE
-GD_ans <- TRUE
 NeEstimator_dir <- "C:/NeEstimator"
 
-sGD(genind_obj,output_name,xy,dist_mat,radius,min_N,NS_ans=TRUE,GD_ans=TRUE,NeEstimator_dir,NHmat_ans=FALSE,genout_ans=FALSE)
+sGD_output = sGD(genind_obj,xy,dist_mat,radius,min_N,NS_ans=TRUE,GD_ans=F,NHmat_ans=T,genout_ans=T,file_name=NULL,NeEstimator_dir=NULL)
 
 # specify landscape and sGD output 
 landscape <- raster(system.file("extdata","sGD_demo_IBR_landscape.asc",package="sGD"))
@@ -77,13 +73,13 @@ theme(panel.grid.major = element_blank(),
 # calculate landscape distance matrices based on Euclidean of cost-weighted distance
 library(sGD)
 setwd("C:/Temp")
-output_name <- "sGD_demo" 
+file_name <- "sGD_demo" 
 xy_file <- system.file("extdata","sGD_demo_xy.csv",package="sGD")
 proj <- "+proj=utm +zone=10 +datum=NAD83"   
-points <- SpatialPoints(read.csv(xy_file)[,c(2,3)],proj4string=CRS(proj)) 
+sp_points <- SpatialPoints(read.csv(xy_file)[,c(2,3)],proj4string=CRS(proj)) 
 landscape_ascii <- system.file("extdata","sGD_demo_IBR_landscape.asc",package="sGD") 
 landscape <- raster(landscape_ascii,crs=CRS(proj))
-distmat(points,output_name,"ed")
-distmat(points,output_name,"cd",landscape)
-distmat(points,output_name,c("ed","cd"),landscape)
+distmat(sp_points,file_name,"ed")
+distmat(sp_points,file_name,"cd",landscape)
+distmat(sp_points,file_name,c("ed","cd"),landscape)
 }

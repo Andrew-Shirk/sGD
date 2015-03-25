@@ -37,7 +37,7 @@
 #' genind_obj <- read.genepop(genepop_file,quiet=T)
 #' xy = read.csv(system.file("extdata","sGD_demo_xy.csv",package="sGD"))
 #' dist_mat <- as.matrix(read.csv(system.file("extdata","sGD_demo_cdmat.csv",package="sGD") ,header=F)) 
-#' radius <- 16238 # for this demo, units are in meters
+#' radius <- 18000 # for this demo, units are in meters
 #' min_N <- 20
 #' NeEstimator_dir <- "C:/NeEstimator"
 #' 
@@ -286,7 +286,7 @@ sGD <- function(genind_obj,xy,dist_mat,radius,min_N,NS_ans=F,GD_ans=T,NHmat_ans=
 #' Calculate a pairwise landscape distance matrix (Euclidian or cost-distance).  
 #' 
 #' @param method Specify the type of distance matrix to be produced, using "ed" for Euclidean distance and "cd" for cost-weighted (i.e. effective) distance or c("ed","cd") for both. If you calculate cost-weighted distances, make sure the \code{points} projection is the same as the \code{landscape} raster.
-#' @param file_name A character string that will be appended to the beginning of the output filename.
+#' @param file_name (optional) A character string that will be appended to the beginning of the output filename. If no name is specified, no file will be written to the working directory.
 #' @param sp_points An object of class SpatialPoints (see raster package).
 #' @param landscape An object of class RasterLayer (see raster package)
 #' 
