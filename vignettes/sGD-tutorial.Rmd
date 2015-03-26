@@ -32,7 +32,7 @@ library("sGD")
 Now you're ready to use the sGD functions and demo data. The tutorial that follows is designed to provide a basic introduction and guide you in the use of sGD.
 
 # sGD Introduction and Tutorial
-Maintainance of genetic diversity in a population is critical to long-term survival and adaptation in a changing environment (Frankham et al. 2002). Populations lose allelic diversity and heterozygosity through the processes of genetic drift and inbreeding, respectively (Amos and Harwood, 1998). If this diversity is not replaced by the processes of mutation and immigration, the population loses alleles and heterozygosity at a rate proportional to the number of breeding
+Maintenance of genetic diversity in a population is critical to long-term survival and adaptation in a changing environment (Frankham et al. 2002). Populations lose allelic diversity and heterozygosity through the processes of genetic drift and inbreeding, respectively (Amos and Harwood, 1998). If this diversity is not replaced by the processes of mutation and immigration, the population loses alleles and heterozygosity at a rate proportional to the number of breeding
 individuals (Wright, 1931). Diminished genetic diversity may reduce a population’s capacity for adaptation in dynamic environments (though dominance, epistasis, and pleiotropy may strongly affect this relationship; Reed and Frankham, 2001), lower the frequency of heterozygotes (and therefore the prevalence of heterozygote vigor or heterosis), favor inbreeding depression, and ultimately increase the risk of extinction (Frankham et al., 2002).
 
 Wright (1931) first defined the concept of effective population size (*N~e~*) as the number of breeding individuals in an ideal population experiencing the same rate of drift as the real population of interest. Factors like unequal sex ratios, a fluctuating population size, overlapping generations, high variability in the distribution of offspring, and non-random mating make the effective size of a population lower than the census size (*N~c~*) because they influence the number of individuals that contribute their genetic variation to the next generation (Frankham et al., 2002). Therefore, the risk of extinction posed by reduced genetic diversity is more closely related to *N~e~* than *N~c~*, making *N~e~* is an important parameter in
@@ -40,7 +40,7 @@ conservation genetics (Lande and Barrowclough, 1987).
 
 To measure indices of genetic diversity and effective size for a groups of individuals meeting the classical definition of a population (i.e. each subpopulation is internally panmictic and having little or no immigration from other subpopulations), one simply groups individuals by subpopulation and calculates genetic indices for each. There are a number of excellent R packages for this, including adegenet, hierfstat, and diveRsity. Standalone software such as Genepop, FSTAT, Arlequin, and Genalex also perform these calculations. An example of a population meeting the classical definition might be a species of fish inhabiting a series of lakes isolated from one another. Genetic analyses on populations meeting the classical definition of a population can be done without bias, so long as each subpopulation is appropriately delineated (e.g. not grouped together with other subpopulations). Furthermore, there is no expectation of spatial heterogeneity in these genetic indices with a discrete subpopulation, because they are panmictic.
 
-Sample groupings are obvious for discrete populations, but what about continuous populations? Wright (1946) first posed an answer to this question. Under his concept, mating probabilities and relatedness among individuals across a landscape are a function of Euclidean distance. So individuals farther apart are more differentiated than individuals nearby, and there are no sharp discontinuities in this pattern of differentiation. Relatedness is continuously varying across space as a smooth function of distance. He called this dynamic 'Isolation by Distance' (Wright, 1931). He thought of these continous populations as being comprised of many small subpopulations that overlap with each other in space, and termed these local breeding populations 'genetic neighborhoods'. Within each neighborhood, mating approaches (but never reaches) random. Under Wright's definition of a genetic neighborhood, the number of effective individuals (i.e. those contributing their genetic variation to the next generation) within the local extent of breeding (*NS*) where most matings occur is defined by:
+Sample groupings are obvious for discrete populations, but what about continuous populations? Wright (1946) first posed an answer to this question. Under his concept, mating probabilities and relatedness among individuals across a landscape are a function of Euclidean distance. So individuals farther apart are more differentiated than individuals nearby, and there are no sharp discontinuities in this pattern of differentiation. Relatedness is continuously varying across space as a smooth function of distance. He called this dynamic 'Isolation by Distance' (Wright, 1931). He thought of these continuous populations as being comprised of many small subpopulations that overlap with each other in space, and termed these local breeding populations 'genetic neighborhoods'. Within each neighborhood, mating approaches (but never reaches) random. Under Wright's definition of a genetic neighborhood, the number of effective individuals (i.e. those contributing their genetic variation to the next generation) within the local extent of breeding (*NS*) where most matings occur is defined by:
 
 >$NS = 4\pi \sigma ^2D$
 
@@ -62,7 +62,7 @@ plot(IBD_landscape)
 plot(xy_points,add=T,pch=20,col="black")
 ```
 
-The black dots represent individuals and the x and y axes are distances in meters. Now lets assume $\sigma$ for this population is 3000 meters, and that dispersal follows a Gaussian function. Under Wright's model, a genetic neighborhood in this population is a circle with a radius of 2$\sigma$, or 6000 meters. Lets pick two individuals (1 and 2) in this population and visualize the neighborhoods surrounding them:
+The black dots represent individuals and the x and y axes are distances in meters. Now let's assume $\sigma$ for this population is 3000 meters, and that dispersal follows a Gaussian function. Under Wright's model, a genetic neighborhood in this population is a circle with a radius of 2$\sigma$, or 6000 meters. Let's pick two individuals (1 and 2) in this population and visualize the neighborhoods surrounding them:
 
 ```{r,eval=T,message=FALSE,warning=FALSE,fig.width = 6, fig.height = 6}
 pt1 = xy_points[255]
@@ -76,7 +76,7 @@ plot(IBD_landscape)
 plot(pts_NH,add=T)
 ```
 
-Notice that the genetic neighborhoods of these two individuals overlap. That means individuals located where the overlap occurs have some probability of mating with either individual 1 or 2. By having overlapping neighborhoods, each of which defines a local breeding pool, we can capture the continuous nature of the population. Lets see how many individuals are in these two neighborhoods:
+Notice that the genetic neighborhoods of these two individuals overlap. That means individuals located where the overlap occurs have some probability of mating with either individual 1 or 2. By having overlapping neighborhoods, each of which defines a local breeding pool, we can capture the continuous nature of the population. Let's see how many individuals are in these two neighborhoods:
 
 ```{r,eval=T,message=FALSE,warning=FALSE,fig.width = 6, fig.height = 6}
 NH1_N = nrow(crop(xy_points,pt1_NH)@coords)
@@ -97,15 +97,15 @@ NH3_N = nrow(crop(xy_points,pt3_NH)@coords)
 NH3_N
 ```
 
-This demonstrates how genetic neighborhoods near the periphery of an IBD population have fewer individuals. We can use sGD to calculate *N*, number of individuals (and here we're talking about the actual number *N~c~*, not the effective number *N~e~*) in each neighoborhood, but first we need to calculate a pairwise Euclidean distance matrix between all individuals:
+This demonstrates how genetic neighborhoods near the periphery of an IBD population have fewer individuals. We can use sGD to calculate *N*, number of individuals (and here we're talking about the actual number *N~c~*, not the effective number *N~e~*) in each neighborhood, but first we need to calculate a pairwise Euclidean distance matrix between all individuals:
 
-```{r,eval=T,message=FALSE,warning=FALSE,fig.width = 5, fig.height = 5}
+```{r,eval=T,message=FALSE,warning=FALSE,fig.width = 6, fig.height = 6}
 library(sGD)
 IBD_dist = distmat(xy_points,method="ed")
 IBD_dist [1:10,1:10]
 ```
 
-This shows you just the pairwise distances between the first 10 individuals in the population, but you get the idea. sGD uses this information to determine the membership of neighborhoods surrounding every individual, based on a threshold distance we'll call 'radius'. We also need to provide sGD with the genotypes from each location, imported as a genind object by the adegenet package. Here we'll use genotypes simulated by the program CDPOP based on the same population of 576 individuals we've already described. 
+This shows you just the pairwise distances between the first 10 individuals in the population, but you get the idea. sGD uses this information to determine the membership of neighborhoods surrounding every individual, based on a threshold distance we'll call 'radius'. We also need to provide sGD with the genotypes from each location, imported as a genind object by the adegenet package. Here we'll use genotypes simulated by the program CDPOP based on the same population of 576 individuals we've already described. Finally, we need to specify a minimum sample (min_N) size per neighborhood required to produce an estimate. This avoids calculating genetic indices from too few samples and producing unreliable estimates.
 
 ```{r,eval=T,message=FALSE,warning=FALSE,fig.width = 6, fig.height = 6}
 IBD_genepop_file <- system.file("extdata","sGD_demo_IBD.gen",package="sGD") 
@@ -123,7 +123,7 @@ theme(panel.grid.major = element_blank(),
       panel.background = element_blank())
 ```
 
-This clearly shows the gradients in local *N~c~*, with fewer individuals near the periphery. However, genetic diversity indices and local effective population size (i.e. Wright's *NS*) are usually of more interest than *N~c~*. Lets look at the percentage of alleles from the total population that are present in each neighborhood (this is the Ap variable in the IBD_sGD data frame):
+This clearly shows the gradients in local *N~c~*, with fewer individuals near the periphery. However, genetic diversity indices and local effective population size (i.e. Wright's *NS*) are usually of more interest than *N~c~*. Let's look at the percentage of alleles from the total population that are present in each neighborhood (this is the Ap variable in the IBD_sGD data frame):
 
 ```{r,eval=T,message=FALSE,warning=FALSE,fig.width = 6, fig.height = 6}
 ggplot()  +
@@ -134,9 +134,9 @@ theme(panel.grid.major = element_blank(),
       panel.background = element_blank())
 ```
 
-In this simple landscape, the pattern of allele usage looks very similar to *N*. Its not exactly like *N* because the simulated genotypes used to produce this pattern were  We'll see soon how such patterns can vary spatially in complex landscapes. For now, you should explore genetic diversity indices calculated by sGD using the code above but changing the color in the ggplots to match the metric of interest. Options include the number of alleles (A), allelic richness (Ar), expected heterozygosity (Hs), observed heterozygosity (Ho), and inbreeding coefficient (FIS).
+In this simple landscape, the pattern of allele usage looks very similar to *N*. It's not exactly like *N* because the simulated genotypes used to produce this pattern were  We'll see soon how such patterns can vary spatially in complex landscapes. For now, you should explore genetic diversity indices calculated by sGD using the code above but changing the color in the ggplots to match the metric of interest. Options include the number of alleles (A), allelic richness (Ar), expected heterozygosity (Hs), observed heterozygosity (Ho), and inbreeding coefficient (FIS).
 
-Now lets use sGD to calculate Wright's *NS* in these local breeding neighborhoods. To do this, we need to point sGD towards the NeEstimator 2.0 executable directory. On my system, the path is "C:/NeEstimator" but you can vary this depending on your installation. We also need to set *NS_ans* to TRUE. Note that in the code below, I have turned off the genetic diversity metric calculations by setting *GD_ans* to FALSE. If you don't need to calculate both types of output, turning one off will speed up the processing time. 
+Now let's use sGD to calculate Wright's *NS* in these local breeding neighborhoods. To do this, we need to point sGD towards the NeEstimator 2.0 executable directory. On my system, the path is "C:/NeEstimator" but you can vary this depending on your installation. We also need to set *NS_ans* to TRUE. Note that in the code below, I have turned off the genetic diversity metric calculations by setting *GD_ans* to FALSE. If you don't need to calculate both types of output, turning one off will speed up the processing time. 
 
 
 ```{r,eval=T,message=FALSE,warning=FALSE,fig.width = 6, fig.height = 6}
@@ -151,9 +151,9 @@ theme(panel.grid.major = element_blank(),
       panel.background = element_blank())
 ```
 
-You can see how some neighborhoods in the center of the landscape have a much larger *NS* than the rest. This is an expected property of a population of uniform density. If we explored a population of variable density, the results could be very different. Note that in the IBD_NS output dataframe, there are several variables that quantify *NS*. They differ in the amount they remove rare alleles from the analysis prior to inferring *NS*. See Waples & Do (2008) for a full explanation. The idea is that rare alleles bias the estimate, and NeEstimator allows the user to removing alleles below a certain frequency. The outputs of 0pct, 2pct, 5pct, and 10pct correspond to no removal or rare alleles, or removing alleles with a frequency below 2%, 5%, and 10% respectively.
+You can see how some neighborhoods in the center of the landscape have a much larger *NS* than the rest. This is an expected property of a population of uniform density. If we explored a population of variable density, the results could be very different. Note that in the IBD_NS output data frame, there are several variables that quantify *NS*. They differ in the amount they remove rare alleles from the analysis prior to inferring *NS*. See Waples & Do (2008) for a full explanation. The idea is that rare alleles bias the estimate, and NeEstimator allows the user to removing alleles below a certain frequency. The outputs of 0pct, 2pct, 5pct, and 10pct correspond to no removal or rare alleles, or removing alleles with a frequency below 2%, 5%, and 10% respectively.
 
-Now lets consider a more complex landscape, where landscape heterogeneity creates spatial variation in how the landscape resists movement and gene flow. The American marten (*Martes americana*) is an example of this dynamic, because this small forest carnivore is vulnerable to predation in open habitats. Marten prefer to move through high canopy cover habitats and in places where there are snags and coarse woody debris that allow concealment and escape from predators. Resistance models are used to quantify landscape resistance to movement and gene flow. Lets look at the one included with the sGD package:
+Now let's consider a more complex landscape, where landscape heterogeneity creates spatial variation in how the landscape resists movement and gene flow. The American marten (*Martes americana*) is an example of this dynamic, because this small forest carnivore is vulnerable to predation in open habitats. Marten prefer to move through high canopy cover habitats and in places where there are snags and coarse woody debris that allow concealment and escape from predators. Resistance models are used to quantify landscape resistance to movement and gene flow. Let's look at the one included with the sGD package:
 
 ```{r,eval=T,message=FALSE,warning=FALSE,fig.width = 6, fig.height = 6}
 IBR_landscape_ascii <- system.file("extdata","sGD_demo_IBR_landscape.asc",package="sGD") 
@@ -170,14 +170,14 @@ geom_raster(data=IBR_landscape.df,aes(x=X,y=Y,fill=Resistance),alpha=I(0.5)) +
       panel.background = element_blank()) 
 ```
 
-In our example, the dark patches of low resistance in this landscape might be areas of high canopy cover, and the white areas of high resistance might be clearcuts or recent burns. These landscapes reflect the concept of isolation by resistance, where mating probabilities are driven not by Euclidean distance, but by the effective or ecological distances between individuals, given the resistance in the landscape. We can still apply the neighborhood concepts discussed alread to these complex landscapes for the purposes of calculating genetic diversity indices in continuous populations. We just have to make one adjustment. Rather than define neighborhoods by Euclidean distances, we'll do so using cost-weighted distance givent the resistance model. We describe this concept more fully in Shirk et al. (2011) and Shirk & Cushman (2014). Lets calculate a cost-weighted distance matrix with sGD:
+In our example, the dark patches of low resistance in this landscape might be areas of high canopy cover, and the white areas of high resistance might be clearcuts or recent burns. These landscapes reflect the concept of isolation by resistance, where mating probabilities are driven not by Euclidean distance, but by the effective or ecological distances between individuals, given the resistance in the landscape. We can still apply the neighborhood concepts discussed already to these complex landscapes for the purposes of calculating genetic diversity indices in continuous populations. We just have to make one adjustment. Rather than define neighborhoods by Euclidean distances, we'll do so using cost-weighted distance given the resistance model. We describe this concept more fully in Shirk et al. (2011) and Shirk & Cushman (2014). Let's calculate a cost-weighted distance matrix with sGD:
 
 ```{r,eval=T,message=FALSE,warning=FALSE,fig.width = 5, fig.height = 5}
 IBR_dist = distmat(xy_points,method="cd",landscape=IBR_landscape)
 IBR_dist [1:10,1:10]
 ```
 
-Notice how these distance are larger than the Euclidean distances in the IBD_dist matrix we looked at earlier. That's because these numbers reflect *effective* distances given the resistance model. A genetic neighborhood based on effective distances in a complex landscape isn't a perfect circle. Rather, its a complex shape. Lets assume the marten population in our example has a mean parent-offspring dispersal distance ($\sigma$) of 8000m in cost-weighted distance (when we talk about distance under IBR, they need to be in cost-distance units). So 2$\sigma$ is 16000m. Lets look at the shape and size of a single neighborhood, given this resistance surface and the same uniform population of 576 individuals. First, lets calculate the cost-weighted distance to pt1 which we used above when considering IBD neighborhoods:
+Notice how these distances are larger than the Euclidean distances in the IBD_dist matrix we looked at earlier. That's because these numbers reflect *effective* distances given the resistance model. A genetic neighborhood based on effective distances in a complex landscape isn't a perfect circle. Rather, it's a complex shape. Let's assume the marten population in our example has a mean parent-offspring dispersal distance ($\sigma$) of 8000m in cost-weighted distance (when we talk about distance under IBR, they need to be in cost-distance units). So 2$\sigma$ is 16000m. Let's look at the shape and size of a single neighborhood, given this resistance surface and the same uniform population of 576 individuals. First, we'll calculate the cost-weighted distance to pt1 which we used above when considering IBD neighborhoods:
 
 ```{r,eval=T,message=FALSE,warning=FALSE,fig.width = 6, fig.height = 6}
 # calculate transition surface and do geocorrection
@@ -197,7 +197,7 @@ plot(cd_pt1_bin,col="black")
 plot(pt1,col="red",pch=20,add=T)
 ```
 
-Notice the irregular shape of the neighborhood. In ecological space, this neighborhood is still a circle (i.e., the outer edge is still 2$\sigma$). By defining the neighborhood and the landscape distance in cost-weighted units, we can now use sGD to calculate genetic diversity indices and Wright's *NS*, based on a CDPOP simulation of our 576 individuals on this resistance landscape. First lets look at the pattern of Ap on the landscape:
+Notice the irregular shape of the neighborhood. In ecological space, this neighborhood is still a circle (i.e., the outer edge is still 2$\sigma$). By defining the neighborhood and the landscape distance in cost-weighted units, we can now use sGD to calculate genetic diversity indices and Wright's *NS*, based on a CDPOP simulation of our 576 individuals on this resistance landscape. First let's look at the pattern of Ap on the landscape:
 
 ```{r,eval=T,message=FALSE,warning=FALSE,fig.width = 6, fig.height = 6}
 IBR_genepop_file <- system.file("extdata","sGD_demo_IBR.gen",package="sGD") 
@@ -213,13 +213,13 @@ theme(panel.grid.major = element_blank(),
       panel.background = element_blank())
 ```
 
-Notice the complex pattern where the most central areas with high allelic diversity is driven by the resistance model. Now lets look at the distribution of *NS* estimates:
+Notice the complex pattern where the most central areas with high allelic diversity is driven by the resistance model. Also, note that the black circles represent neighborhoods where the minimum sample size (here set to N=20) was not met, so no estimates were made. Now let's look at the distribution of *NS* estimates:
 
 ```{r,eval=T,message=FALSE,warning=FALSE,fig.width = 6, fig.height = 6}
 boxplot(IBR_sGD$NS_ex2pct)
 ```
 
-Notice how there is a major outlier with an estimated *NS* > 1000. Occasionally, the algorithm NeEstimator uses to estimate *NS* produces very large estimates, and its important to recognize these are unlikely, particularly when they are surrounded by neighborhoods with mush lower estimates. Lets remove that outlier, and then look at the pattern of *NS* on the landscape:
+Notice how there is a major outlier with an estimated *NS* > 1000. Occasionally, the algorithm NeEstimator uses to estimate *NS* produces very large estimates, and it's important to recognize these are unlikely, particularly when they are surrounded by neighborhoods with much lower estimates. Let's remove that outlier, and then look at the pattern of *NS* on the landscape:
 
 ```{r,eval=T,message=FALSE,warning=FALSE,fig.width = 6, fig.height = 6}
 # get rid of an outlier
@@ -235,14 +235,14 @@ theme(panel.grid.major = element_blank(),
 
 Again, we see a complex pattern that corresponds to the pattern of resistance in the landscape. At this point, you should explore other genetic diversity indices in the IBD_sGD data frame and see how their patterns play out on this landscape. Notice that, with the added resistance in the landscape, the genetic patterns tend to be stronger than what we observed earlier for the IBD population, particularly for genetic indices of heterozygosity.
 
-One thing we haven't considered yet is what to do when you don't know 2$\sigma$. In simulations, dispersal distances can be recorded and used to calculate $\sigma$. In real populations, however, it is more difficult to estimate this parameter. Ideally, one could infer it from the genetic data directly. One idea suggested in Waples et al.(2013) was to set the neighborhood radius to the size that minimizes FIS departures from zero (i.e. minimize both positive and negative inbreeding coefficients). A non-zero FIS value is an indicator that the local neighborhood is not in Hardy-Weinberg equilibrium, so if FIS in neighborhoods approaches zero, one might assume the neighborhood is sized appropriately to meet the assumptions of a population required before calculating genetic diversity indices and *NS*. In Shirk and Cushman (2014), we explored this idea and found it to be a useful concept but not terribly precise in estimating the true value of 2$\sigma$. We are currently exploring new ideas for this, and hope to update sGD soon with alternative approaches. For now, however, we recommend iteratively modifying the radius of the neighborhood until the distribution of FIS values is centered on zero. We already know the IBR population has a radius 2$\sigma$ = 16000m from our simulations. This produced the following distribution of FIS values:
+One thing we haven't considered yet is what to do when you don't know 2$\sigma$. In simulations, dispersal distances can be recorded and used to calculate $\sigma$. In real populations, however, it is more difficult to estimate this parameter. Ideally, one could infer it from the genetic data directly. One idea suggested in Waples et al(2013) was to set the neighborhood radius to the size that minimizes FIS departures from zero (i.e. minimize both positive and negative inbreeding coefficients). A non-zero FIS value is an indicator that the local neighborhood is not in Hardy-Weinberg equilibrium, so if FIS in neighborhoods approaches zero, one might assume the neighborhood is sized appropriately to meet the assumptions of a population required before calculating genetic diversity indices and *NS*. In Shirk & Cushman (2014), we explored this idea and found it to be a useful concept but not terribly precise in estimating the true value of 2$\sigma$. We are currently exploring new ideas for this, and hope to update sGD soon with alternative approaches. For now, however, we recommend iteratively modifying the radius of the neighborhood until the distribution of FIS values is centered on zero. We already know the IBR population has a radius 2$\sigma$ = 16000m from our simulations. This produced the following distribution of FIS values:
 
 ```{r,eval=T,message=FALSE,warning=FALSE,fig.width = 6, fig.height = 6}
 hist(IBR_sGD$FIS)
 median(na.omit(IBR_sGD$FIS))
 ```
 
-Notice the distribution is cenetered on zero and the median FIS value is very close to zero. Now lets add 50% more to the radius and look at the distribution (this will take several minutes, depending on your computer, as the larger the radius, the more computations are made):
+Notice the distribution is centered on zero and the median FIS value is very close to zero. Now let's add 50% more to the radius and look at the distribution (this will take several minutes, depending on your computer, as the larger the radius, the more computations are made):
 
 ```{r,eval=T,message=FALSE,warning=FALSE,fig.width = 6, fig.height = 6}
 radius <- 24000
@@ -251,7 +251,7 @@ hist(IBR_sGD_24k$FIS)
 median(na.omit(IBR_sGD_24k$FIS))
 ```
 
-See how the distribution of FIS values shifted to the right (positive values) and the median FIS moved almost 5x farther from zero? This is exactly what you expect due to a Wahlund effect that occurs when the neighborhood extent is larger than the local extent of breeding. Now lets reduce the radius to 10000m and recalculate FIS:
+See how the distribution of FIS values shifted to the right (positive values) and the median FIS moved almost 5x farther from zero? This is exactly what you expect due to a Wahlund effect that occurs when the neighborhood extent is larger than the local extent of breeding. Now let's reduce the radius to 10000m and recalculate FIS:
 
 ```{r,eval=T,message=FALSE,warning=FALSE,fig.width = 6, fig.height = 6}
 radius <- 10000
@@ -260,7 +260,7 @@ hist(IBR_sGD_10k$FIS)
 median(na.omit(IBR_sGD_10k$FIS))
 ```
 
-Now the distribution has shifted to the left (negative FIS values), in sort of a inverse Wahlund effect. Repeating this evaluation over a range of radius values can provide a crude means of inferring $\sigma$ when it is not know empirically or from simulations.
+Now the distribution has shifted to the left (negative FIS values), in what amounts to an inverse Wahlund effect. Repeating this evaluation over a range of radius values can provide a crude means of inferring $\sigma$ when it is not known empirically or from simulations.
 
 By now, you should have an understanding of what sGD is designed to do and the basics of using it in R. Make sure you also explore the help sections for sGD commands (e.g. type ?sGD or ?distmat) to learn more about the inputs, parameters, and outputs.
 

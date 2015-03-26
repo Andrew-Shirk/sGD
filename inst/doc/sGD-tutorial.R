@@ -45,7 +45,7 @@ plot(pt3_NH,add=T)
 NH3_N = nrow(crop(xy_points,pt3_NH)@coords)
 NH3_N
 
-## ----,eval=T,message=FALSE,warning=FALSE,fig.width = 5, fig.height = 5----
+## ----,eval=T,message=FALSE,warning=FALSE,fig.width = 6, fig.height = 6----
 library(sGD)
 IBD_dist = distmat(xy_points,method="ed")
 IBD_dist [1:10,1:10]
