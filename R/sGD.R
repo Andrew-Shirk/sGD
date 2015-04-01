@@ -262,7 +262,7 @@ sGD <- function(genind_obj,xy,dist_mat,radius,min_N,NS_ans=F,GD_ans=T,NHmat_ans=
   
   for(col in c(3:ncol(NH_summary)))
   {
-    NH_summary[,col]=as.numeric(NH_summary[,col])
+    NH_summary[,col]=suppressWarnings(as.numeric(NH_summary[,col]))
   }
   
   if(is.null(file_name)==FALSE)
