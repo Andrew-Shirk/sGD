@@ -275,7 +275,7 @@ sGD <- function(genind_obj,xy,dist_mat,radius,min_N,NS_ans=F,GD_ans=T,NHmat_ans=
   if(NHmat_ans==TRUE)
   {
     cat("Writing neighborhood membership matrix to file...\n")
-    write.table (neighborhood_mat,paste(file_name,"_neighborhood_mat.csv",sep=""),row.names=NH_summary$Indiv_ID,col.names=c("",NH_summary$Indiv_ID),sep=",",na="")
+    write.table (neighborhood_mat,paste(file_name,"_neighborhood_mat.csv",sep=""),row.names=NH_summary$Indiv_ID,col.names=NH_summary$Indiv_ID,sep=",",na="")
   }
   
   return(NH_summary)
