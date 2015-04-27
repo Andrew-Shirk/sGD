@@ -33,7 +33,7 @@
 #' #Make sure your paths are correct for your operating system (e.g. in linux, it might be "/home/yourname/Temp")
 #' library(sGD)
 #' setwd("C:/Temp") # the output file will be written to the working directory
-#' genepop_file <- system.file("extdata","sGD_demo_genepop.gen",package="sGD") 
+#' genepop_file <- system.file("extdata","sGD_demo_IBR.gen",package="sGD") 
 #' genind_obj <- read.genepop(genepop_file,quiet=T)
 #' xy = read.csv(system.file("extdata","sGD_demo_xy.csv",package="sGD"))
 #' dist_mat <- as.matrix(read.csv(system.file("extdata","sGD_demo_cdmat.csv",package="sGD") ,header=F)) 
@@ -41,7 +41,7 @@
 #' min_N <- 20
 #' NeEstimator_dir <- "C:/NeEstimator"
 #' 
-#' sGD_output = sGD(genind_obj,xy,dist_mat,radius,min_N,NS_ans=TRUE,GD_ans=F,NHmat_ans=T,genout_ans=T,file_name=NULL,NeEstimator_dir=NULL)
+#' sGD_output = sGD(genind_obj,xy,dist_mat,radius,min_N,NS_ans=TRUE,GD_ans=TRUE,NHmat_ans=T,genout_ans=T,file_name="sGD_demo",NeEstimator_dir=NeEstimator_dir)
 
 #' # specify landscape and sGD output 
 #' landscape <- raster(system.file("extdata","sGD_demo_IBR_landscape.asc",package="sGD"))
@@ -275,7 +275,7 @@ sGD <- function(genind_obj,xy,dist_mat,radius,min_N,NS_ans=F,GD_ans=T,NHmat_ans=
   if(NHmat_ans==TRUE)
   {
     cat("Writing neighborhood membership matrix to file...\n")
-    write.table (neighborhood_mat,paste(file_name,"_neighborhood_mat.csv",sep=""),row.names=NH_summary$Indiv_ID,col.names=NH_summary$Indiv_ID,sep=",",na="")
+    write.table (neighborhood_mat,paste(file_name,"_neighborhood_mat.csv",sep=""),row.names=NH_summary$Indiv_ID,col.names=c("",NH_summary$Indiv_ID),sep=",",na="")
   }
   
   return(NH_summary)
@@ -303,6 +303,7 @@ sGD <- function(genind_obj,xy,dist_mat,radius,min_N,NS_ans=F,GD_ans=T,NHmat_ans=
 #' landscape <- raster(landscape_ascii,crs=CRS(proj))
 #' ed <- distmat(sp_points,method="ed",file_name = file_name)
 #' cd <- distmat(sp_points,method="cd",file_name = file_name,landscape=landscape)
+#' 
 distmat <- function(sp_points,method,file_name=NULL,landscape=NULL)
 {
   # check if the points are projected
