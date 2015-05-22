@@ -3,7 +3,7 @@
 #' @param genind_obj A genind object (created by the adegenet package function import2genind or similar methods) containing individual genotypes.
 #' @param file_name (optional) A character string that will be appended to the front of the output filename (will end with "_sGD.csv"). If none specified, no output file will be written.
 #' @param xy A dataframe containing 3 columns in the following order: individual IDs, X coordinates, and Y coordinates.
-#' @param dist_mat An NxN (N= sample size) matrix of pairwise landscape distances (Euclidean or effective).
+#' @param dist_mat An NxN (N= sample size) matrix of pairwise landscape distances (Euclidean or effective). The \code{distmat} function in the sGD package may be used to produce Euclidean and cost-weighted distance matrices.
 #' @param radius The radius of the genetic neighborhood in the same units as \code{dist_mat}.
 #' @param min_N The minimum sample size per neighborhood for indices to be calculated. NA is returned for neighborhoods < \code{min_N}.
 #' @param NS_ans Boolean (T or F) answer to whether you want sGD to calculate Wright's neighborhood size.
@@ -285,10 +285,10 @@ sGD <- function(genind_obj,xy,dist_mat,radius,min_N,NS_ans=F,GD_ans=T,NHmat_ans=
 
 #' Calculate a pairwise landscape distance matrix (Euclidian or cost-distance).  
 #' 
-#' @param method Specify the type of distance matrix to be produced, using "ed" for Euclidean distance and "cd" for cost-weighted (i.e. effective) distance. If you calculate cost-weighted distances, make sure the \code{points} projection is the same as the \code{landscape} raster.
+#' @param method Specify the type of distance matrix to be produced, using "ed" for Euclidean distance and "cd" for cost-weighted (i.e. effective) distance. Accurate distance calculations require a projected coordinate system (e.g. UTM), so do not use geographical coordinates (e.g. longlat). If you calculate cost-weighted distances, make sure the \code{points} projection is the same as the \code{landscape} raster. 
 #' @param file_name (optional) A character string that will be appended to the beginning of the output filename. If no name is specified, no file will be written to the working directory.
-#' @param sp_points An object of class SpatialPoints (see raster package).
-#' @param landscape An object of class RasterLayer (see raster package)
+#' @param sp_points An object of class SpatialPoints (see sp package for details).
+#' @param landscape An object of class RasterLayer (see raster package for details)
 #' 
 #' @return An NxN (N= sample size: i.e. nrow(xy)) matrix of pairwise Euclidean and/or effective landscape distances written to .csv comma delimited files with edmat or cdmat appended to the end of the \code{filename}.
 #' 
@@ -312,29 +312,17 @@ distmat <- function(sp_points,method,file_name=NULL,landscape=NULL)
       print("Warning: the input points have no projection defined.")
     }  
   
-  # determine appropriate number of decimal places depending on the input units
-  xrange = max(sp_points@coords[,1]) - min(sp_points@coords[,1]) 
-  yrange = max(sp_points@coords[,2]) - min(sp_points@coords[,2])
-  maxrange = max(xrange,yrange)
-  
-  if(maxrange>180) # if units are degrees, use many decimal places, otherwise, units of feet/meters only need 1 decimal place.
-  {
-    dec=1
-  } else {
-    dec=6
-  }
-    
   for (type in method)
   {
     if (type=="ed")
     {
       # calculate costdistance and euclidean distance matrices - be careful with rounding if map units aren't meters
-      ed = round(full(dist(sp_points@coords,method="euclidean")),dec)
+      ed = round(full(dist(sp_points@coords,method="euclidean")),2)
       
       # write matrices to csv files
       if(is.null(file_name)==F)
       {
-        write.table(ed,paste(file_name,"_edmat.csv"),row.names=F,col.names=F,sep=",")         
+        write.table(ed,paste(file_name,"_edmat.csv",sep=""),row.names=F,col.names=F,sep=",")         
       }
     }
     
@@ -346,7 +334,7 @@ distmat <- function(sp_points,method,file_name=NULL,landscape=NULL)
         print("Warning: the input raster has no projection defined.")
       } else if(as.character(sp_points@proj4string) != as.character(landscape@crs))
       {
-        print("The projection of the points and landscape are not the same - please correct and rerun...")
+        print("Warning: the projection of the points and landscape is not the same.")
       }
       
       # calculate transition surface, and geocorrect it in E-W dimension
@@ -354,19 +342,18 @@ distmat <- function(sp_points,method,file_name=NULL,landscape=NULL)
       trCorrC<-geoCorrection(tr,type="c",multpl=FALSE,scl=FALSE)
       
       # calculate costdistance and euclidean distance matrices - be careful with rounding if map units aren't meters
-      cd <- round(full(costDistance(trCorrC, sp_points)),dec)
+      cd <- round(full(costDistance(trCorrC, sp_points)),2)
       
       # write matrix to csv files
       if(is.null(file_name)==F)
       {
-        write.table(cd,paste(file_name,"_cdmat.csv"),row.names=F,col.names=F,sep=",")         
+        write.table(cd,paste(file_name,"_cdmat.csv",sep=""),row.names=F,col.names=F,sep=",")         
       }
     }
   }
 
   if(method=="ed") return(ed)
   if(method=="cd") return(cd)
-  #if(length(method)==2) return(list(ed,cd))
 }
 
 
