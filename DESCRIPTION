@@ -24,10 +24,12 @@ Description: sGD provides spatially explicit estimates of genetic diversity
 Depends: 
     R (>= 3.0.0),
     adegenet (>= 2.0.0),
-    hierfstat (>= 0.04.15),
+    hierfstat,
     raster,
     ecodist,
     gdistance
 License: GPL (>= 2)
 VignetteBuilder: knitr
-Suggests: knitr
+Suggests: knitr,
+    ggplot,
+    maptools
