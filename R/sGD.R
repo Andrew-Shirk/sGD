@@ -1,6 +1,6 @@
 #' Calculate spatially explicit indicies of genetic diversity and Wright's neighborhood size (NS).
 #' 
-#' @param genind_obj A genind object (created by the adegenet package function import2genind or similar methods) containing individual genotypes.
+#' @param genind_obj A genind object (created by the adegenet package function import2genind or related methods) containing individual genotypes.
 #' @param file_name (optional) A character string that will be appended to the front of the output filename (will end with "_sGD.csv"). If none specified, no output file will be written.
 #' @param xy A dataframe containing 3 columns in the following order: individual IDs, X coordinates, and Y coordinates.
 #' @param dist_mat An NxN (N= sample size) matrix of pairwise landscape distances (Euclidean or effective). The \code{distmat} function in the sGD package may be used to produce Euclidean and cost-weighted distance matrices.
@@ -30,17 +30,23 @@
 #' @return \code{NS_ex10pct} - an estimate of the effective number of breeding indviduals (Wright's neighborhood size) present within the neighborhood, exluding alleles with a frequency of 0.10 or less.
 #' 
 #' @examples 
-#' #Make sure your paths are correct for your operating system (e.g. in linux, it might be "/home/yourname/Temp")
 #' library(sGD)
+#' 
+#' # set the working directory and read in your data
 #' setwd("C:/Temp") # the output file will be written to the working directory
 #' genepop_file <- system.file("extdata","sGD_demo_IBR.gen",package="sGD") 
-#' genind_obj <- read.genepop(genepop_file,quiet=T)
 #' xy = read.csv(system.file("extdata","sGD_demo_xy.csv",package="sGD"))
-#' dist_mat <- as.matrix(read.csv(system.file("extdata","sGD_demo_cdmat.csv",package="sGD") ,header=F)) 
+#' dist_mat <- as.matrix(read.csv(system.file("extdata","sGD_demo_cdmat.csv",package="sGD") ,header=F))
+#' 
+#' # convert genepop to genind (make sure you specify the correct allele code digits for your data (in this case ncode = 3L)
+#' genind_obj <- read.genepop(genepop_file,ncode=3L,quiet=T) 
+#' 
+#' # set parameters  
 #' radius <- 18000 # for this demo, units are in meters
 #' min_N <- 20
 #' NeEstimator_dir <- "C:/NeEstimator"
 #' 
+#' # run sGD
 #' sGD_output = sGD(genind_obj,xy,dist_mat,radius,min_N,NS_ans=TRUE,GD_ans=TRUE,NHmat_ans=T,genout_ans=T,file_name="sGD_demo",NeEstimator_dir=NeEstimator_dir)
 
 #' # specify landscape and sGD output 
@@ -67,6 +73,17 @@
 
 sGD <- function(genind_obj,xy,dist_mat,radius,min_N,NS_ans=F,GD_ans=T,NHmat_ans=F,genout_ans=F,file_name=NULL,NeEstimator_dir=NULL)
 {
+  if(packageVersion("adegenet") < "2.0.0") {
+    stop("Please install the latest version of the adegenet package (>= 2.0.0)")
+  }
+  
+  if(packageVersion("hierfstat") < "0.04.15") {
+    stop("Please install the development version of the hierfstat package (>= 0.04.15) 
+       by first installing the devtools package, and then running:
+               library(devtools)
+               install_github(\"jgx65/hierfstat\")")
+    }
+  
   # do initial error checking
   if (NS_ans == F & GD_ans == F)
   {
@@ -75,22 +92,21 @@ sGD <- function(genind_obj,xy,dist_mat,radius,min_N,NS_ans=F,GD_ans=T,NHmat_ans=
   
   # read input files and convert to required format
   cat ("Reading input files...\n")
-  hierf_dat = genind2hierfstat(genind_obj)
   df_dat = genind2df(genind_obj)
-  df_dat$pop = as.character(df_dat$pop)
   
+  allele.digits = nchar(genind_obj@all.names[[1]][1])
+
   # set parameters
-  numloci = length(genind_obj@loc.names)
-  numindivs = length(genind_obj@ind.names)
+  numloci = length(names(genind_obj@all.names))
+  numindivs = dim(genind_obj@tab)[1]
   OS = as.character(Sys.info()['sysname']) # Needs to be a character for Linux
 
-  NH_genepop_filename = "TempGenepop.gen"
+  NH_genepop_filename = paste(file_name,"_genepop.gen",sep="")
   
   if(is.null(file_name)==FALSE)
   {
     NH_summary_filename = paste(file_name,"_sGD.csv",sep="") 
   }
-
 
   # do additional error checking
   if(is.numeric(min_N)==F){stop("min_N must be an integer")}
@@ -141,12 +157,12 @@ sGD <- function(genind_obj,xy,dist_mat,radius,min_N,NS_ans=F,GD_ans=T,NHmat_ans=
   
   #write genepop header and loci
   header_length = 1+numloci
-  genepop_header = "TempGenepop"
+  genepop_header = "Genepop_file"
   write.table(genepop_header, NH_genepop_filename,sep="\t",quote=F,col.names=F,row.names=F)
   
   for (locus in 1:numloci)
   {
-    write.table(genind_obj@loc.names[locus], NH_genepop_filename,sep="\t",quote=F,col.names=F,row.names=F,append=T)
+    write.table(names(genind_obj@all.names)[locus], NH_genepop_filename,sep="\t",quote=F,col.names=F,row.names=F,append=T)
   }
   
   # define neighborhoods and write to genepop file
@@ -169,7 +185,7 @@ sGD <- function(genind_obj,xy,dist_mat,radius,min_N,NS_ans=F,GD_ans=T,NHmat_ans=
     write.table(output, NH_genepop_filename,sep="\t",quote=F,col.names=F,row.names=F,append=T)
   }
   
-  NH_summary = data.frame(genind_obj@ind.names,xy[,c(2,3)],neighborhood_N,stringsAsFactors=F)
+  NH_summary = data.frame(dimnames(genind_obj@tab)[[1]],xy[,c(2,3)],neighborhood_N,stringsAsFactors=F)
   names(NH_summary) = c("Indiv_ID","X","Y","N")
   NH_summary$index = c(1:numindivs)
 
@@ -178,14 +194,14 @@ sGD <- function(genind_obj,xy,dist_mat,radius,min_N,NS_ans=F,GD_ans=T,NHmat_ans=
     # Calculate genetic diversity indices
     cat("Calculating genetic diversity indices for neighborhoods...\n")
   
-    NH_dat = import2genind(NH_genepop_filename,quiet=T)
-    NH_hierf_dat = genind2hierfstat(NH_dat)
+    NH_genind = read.genepop(NH_genepop_filename,ncode=allele.digits,quiet=T)
+    NH_hierfstat = hierfstat:::.genind2hierfstat(NH_genind)
 
-    NH_A = nb.alleles(NH_hierf_dat)
-    NH_Ar = round(colMeans(allelic.richness(NH_hierf_dat)$Ar),4)
-    NH_Ap = round(colSums(NH_A)/sum(NH_dat@loc.nall),4)
+    NH_A = nb.alleles(NH_hierfstat)
+    NH_Ar = round(colMeans(allelic.richness(NH_hierfstat)$Ar),4)
+    NH_Ap = round(colSums(NH_A)/sum(NH_genind@loc.n.all),4)
     NH_A = round(colMeans(NH_A),4)
-    NH_stats = basic.stats(NH_hierf_dat,digits=3)
+    NH_stats = basic.stats(NH_hierfstat,digits=4)
     NH_Ho = round(colMeans(NH_stats$Ho),4)
     NH_Hs = round(colMeans(NH_stats$Hs),4)
     NH_FIS = round(1 - NH_Ho/NH_Hs,4)
@@ -275,7 +291,7 @@ sGD <- function(genind_obj,xy,dist_mat,radius,min_N,NS_ans=F,GD_ans=T,NHmat_ans=
   if(NHmat_ans==TRUE)
   {
     cat("Writing neighborhood membership matrix to file...\n")
-    write.table (neighborhood_mat,paste(file_name,"_neighborhood_mat.csv",sep=""),row.names=NH_summary$Indiv_ID,col.names=NH_summary$Indiv_ID,sep=",",na="")
+    write.table (neighborhood_mat,paste(file_name,"_neighborhood_mat.csv",sep=""),row.names=F,col.names=F,sep=",",na="")
   }
   
   return(NH_summary)
@@ -294,13 +310,23 @@ sGD <- function(genind_obj,xy,dist_mat,radius,min_N,NS_ans=F,GD_ans=T,NHmat_ans=
 #' 
 #' @examples 
 #' library(sGD)
+#' 
+#' # set the working directory and read in your location data and landscape
 #' setwd("C:/Temp")
-#' file_name <- "sGD_demo" 
 #' xy_file <- system.file("extdata","sGD_demo_xy.csv",package="sGD")
+#' landscape_ascii <- system.file("extdata","sGD_demo_IBR_landscape.asc",package="sGD") 
+#' 
+#' # convert locations to SpatialPoints (sp package)
 #' proj <- "+proj=utm +zone=10 +datum=NAD83"   
 #' sp_points <- SpatialPoints(read.csv(xy_file)[,c(2,3)],proj4string=CRS(proj)) 
-#' landscape_ascii <- system.file("extdata","sGD_demo_IBR_landscape.asc",package="sGD") 
+#' 
+#' # convert landscape_ascii to raster object (raster package)
 #' landscape <- raster(landscape_ascii,crs=CRS(proj))
+#' 
+#' # specify output file_name
+#' file_name <- "sGD_demo" 
+#' 
+#' # run ed and cd matrix calculations
 #' ed <- distmat(sp_points,method="ed",file_name = file_name)
 #' cd <- distmat(sp_points,method="cd",file_name = file_name,landscape=landscape)
 #' 

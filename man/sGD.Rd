@@ -9,11 +9,11 @@ sGD(genind_obj, xy, dist_mat, radius, min_N, NS_ans = F, GD_ans = T,
   NeEstimator_dir = NULL)
 }
 \arguments{
-\item{genind_obj}{A genind object (created by the adegenet package function import2genind or similar methods) containing individual genotypes.}
+\item{genind_obj}{A genind object (created by the adegenet package function import2genind or related methods) containing individual genotypes.}
 
 \item{xy}{A dataframe containing 3 columns in the following order: individual IDs, X coordinates, and Y coordinates.}
 
-\item{dist_mat}{An NxN (N= sample size) matrix of pairwise landscape distances (Euclidean or effective).}
+\item{dist_mat}{An NxN (N= sample size) matrix of pairwise landscape distances (Euclidean or effective). The \code{distmat} function in the sGD package may be used to produce Euclidean and cost-weighted distance matrices.}
 
 \item{radius}{The radius of the genetic neighborhood in the same units as \code{dist_mat}.}
 
@@ -68,17 +68,23 @@ Variables in the output data frame include:
 Calculate spatially explicit indicies of genetic diversity and Wright's neighborhood size (NS).
 }
 \examples{
-#Make sure your paths are correct for your operating system (e.g. in linux, it might be "/home/yourname/Temp")
 library(sGD)
+
+# set the working directory and read in your data
 setwd("C:/Temp") # the output file will be written to the working directory
 genepop_file <- system.file("extdata","sGD_demo_IBR.gen",package="sGD")
-genind_obj <- read.genepop(genepop_file,quiet=T)
 xy = read.csv(system.file("extdata","sGD_demo_xy.csv",package="sGD"))
 dist_mat <- as.matrix(read.csv(system.file("extdata","sGD_demo_cdmat.csv",package="sGD") ,header=F))
+
+# convert genepop to genind (make sure you specify the correct allele code digits for your data (in this case ncode = 3L)
+genind_obj <- read.genepop(genepop_file,ncode=3L,quiet=T)
+
+# set parameters
 radius <- 18000 # for this demo, units are in meters
 min_N <- 20
 NeEstimator_dir <- "C:/NeEstimator"
 
+# run sGD
 sGD_output = sGD(genind_obj,xy,dist_mat,radius,min_N,NS_ans=TRUE,GD_ans=TRUE,NHmat_ans=T,genout_ans=T,file_name="sGD_demo",NeEstimator_dir=NeEstimator_dir)
 # specify landscape and sGD output
 landscape <- raster(system.file("extdata","sGD_demo_IBR_landscape.asc",package="sGD"))

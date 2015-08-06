@@ -7,13 +7,13 @@
 distmat(sp_points, method, file_name = NULL, landscape = NULL)
 }
 \arguments{
-\item{sp_points}{An object of class SpatialPoints (see raster package).}
+\item{sp_points}{An object of class SpatialPoints (see sp package for details).}
 
-\item{method}{Specify the type of distance matrix to be produced, using "ed" for Euclidean distance and "cd" for cost-weighted (i.e. effective) distance. If you calculate cost-weighted distances, make sure the \code{points} projection is the same as the \code{landscape} raster.}
+\item{method}{Specify the type of distance matrix to be produced, using "ed" for Euclidean distance and "cd" for cost-weighted (i.e. effective) distance. Accurate distance calculations require a projected coordinate system (e.g. UTM), so do not use geographical coordinates (e.g. longlat). If you calculate cost-weighted distances, make sure the \code{points} projection is the same as the \code{landscape} raster.}
 
 \item{file_name}{(optional) A character string that will be appended to the beginning of the output filename. If no name is specified, no file will be written to the working directory.}
 
-\item{landscape}{An object of class RasterLayer (see raster package)}
+\item{landscape}{An object of class RasterLayer (see raster package for details)}
 }
 \value{
 An NxN (N= sample size: i.e. nrow(xy)) matrix of pairwise Euclidean and/or effective landscape distances written to .csv comma delimited files with edmat or cdmat appended to the end of the \code{filename}.
@@ -23,13 +23,23 @@ Calculate a pairwise landscape distance matrix (Euclidian or cost-distance).
 }
 \examples{
 library(sGD)
+
+# set the working directory and read in your location data and landscape
 setwd("C:/Temp")
-file_name <- "sGD_demo"
 xy_file <- system.file("extdata","sGD_demo_xy.csv",package="sGD")
+landscape_ascii <- system.file("extdata","sGD_demo_IBR_landscape.asc",package="sGD")
+
+# convert locations to SpatialPoints (sp package)
 proj <- "+proj=utm +zone=10 +datum=NAD83"
 sp_points <- SpatialPoints(read.csv(xy_file)[,c(2,3)],proj4string=CRS(proj))
-landscape_ascii <- system.file("extdata","sGD_demo_IBR_landscape.asc",package="sGD")
+
+# convert landscape_ascii to raster object (raster package)
 landscape <- raster(landscape_ascii,crs=CRS(proj))
+
+# specify output file_name
+file_name <- "sGD_demo"
+
+# run ed and cd matrix calculations
 ed <- distmat(sp_points,method="ed",file_name = file_name)
 cd <- distmat(sp_points,method="cd",file_name = file_name,landscape=landscape)
 }
