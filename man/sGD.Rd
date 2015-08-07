@@ -4,7 +4,7 @@
 \alias{sGD}
 \title{Calculate spatially explicit indicies of genetic diversity and Wright's neighborhood size (NS).}
 \usage{
-sGD(genind_obj, xy, dist_mat, radius, min_N, NS_ans = F, GD_ans = T,
+sGD(genind_obj, xy, dist.mat, radius, min_N, NS_ans = F, GD_ans = T,
   NHmat_ans = F, genout_ans = F, file_name = NULL,
   NeEstimator_dir = NULL)
 }
@@ -13,9 +13,9 @@ sGD(genind_obj, xy, dist_mat, radius, min_N, NS_ans = F, GD_ans = T,
 
 \item{xy}{A dataframe containing 3 columns in the following order: individual IDs, X coordinates, and Y coordinates.}
 
-\item{dist_mat}{An NxN (N= sample size) matrix of pairwise landscape distances (Euclidean or effective). The \code{distmat} function in the sGD package may be used to produce Euclidean and cost-weighted distance matrices.}
+\item{dist.mat}{An NxN (N= sample size) matrix of pairwise landscape distances (Euclidean or effective). The \code{distmat} function in the sGD package may be used to produce Euclidean and cost-weighted distance matrices.}
 
-\item{radius}{The radius of the genetic neighborhood in the same units as \code{dist_mat}.}
+\item{radius}{The radius of the genetic neighborhood in the same units as \code{dist.mat}.}
 
 \item{min_N}{The minimum sample size per neighborhood for indices to be calculated. NA is returned for neighborhoods < \code{min_N}.}
 
@@ -56,28 +56,30 @@ Variables in the output data frame include:
 
 \code{FIS} - the average inbreeding coefficient across all loci/individuals within the neighborhood.
 
-\code{NS_ex0pct} - an estimate of the effective number of breeding indviduals (Wright's neighborhood size) present within the neighborhood, not exluding rare alleles that could bias the estimate.
+\code{NS_ex0} - an estimate of the effective number of breeding indviduals (Wright's neighborhood size) present within the neighborhood, not exluding rare alleles that could bias the estimate.
 
-\code{NS_ex2pct} - an estimate of the effective number of breeding indviduals (Wright's neighborhood size) present within the neighborhood, exluding alleles with a frequency of 0.02 or less.
+\code{NS_ex0.02} - an estimate of the effective number of breeding indviduals (Wright's neighborhood size) present within the neighborhood, exluding alleles with a frequency of 0.02 or less.
 
-\code{NS_ex5pct} - an estimate of the effective number of breeding indviduals (Wright's neighborhood size) present within the neighborhood, exluding alleles with a frequency of 0.05 or less.
+\code{NS_ex0.05} - an estimate of the effective number of breeding indviduals (Wright's neighborhood size) present within the neighborhood, exluding alleles with a frequency of 0.05 or less.
 
-\code{NS_ex10pct} - an estimate of the effective number of breeding indviduals (Wright's neighborhood size) present within the neighborhood, exluding alleles with a frequency of 0.10 or less.
+\code{NS_ex0.10} - an estimate of the effective number of breeding indviduals (Wright's neighborhood size) present within the neighborhood, exluding alleles with a frequency of 0.10 or less.
 }
 \description{
 Calculate spatially explicit indicies of genetic diversity and Wright's neighborhood size (NS).
 }
 \examples{
 library(sGD)
+library(adegenet)
+library(raster)
 
-# set the working directory and read in your data
-setwd("C:/Temp") # the output file will be written to the working directory
-genepop_file <- system.file("extdata","sGD_demo_IBR.gen",package="sGD")
+# read in genotypes, locations, and distance matrix
+genepop.file <- system.file("extdata","sGD_demo_IBR.gen",package="sGD")
 xy = read.csv(system.file("extdata","sGD_demo_xy.csv",package="sGD"))
-dist_mat <- as.matrix(read.csv(system.file("extdata","sGD_demo_cdmat.csv",package="sGD") ,header=F))
+dist.mat <- as.matrix(read.csv(system.file("extdata","sGD_demo_cdmat.csv",package="sGD"),
+                               header=FALSE))
 
-# convert genepop to genind (make sure you specify the correct allele code digits for your data (in this case ncode = 3L)
-genind_obj <- read.genepop(genepop_file,ncode=3L,quiet=T)
+# convert genepop to genind (make sure you specify the correct allele code digits - ncode)
+genind_obj <- read.genepop(genepop.file,ncode=3L,quiet=TRUE)
 
 # set parameters
 radius <- 18000 # for this demo, units are in meters
@@ -85,10 +87,11 @@ min_N <- 20
 NeEstimator_dir <- "C:/NeEstimator"
 
 # run sGD
-sGD_output = sGD(genind_obj,xy,dist_mat,radius,min_N,NS_ans=TRUE,GD_ans=TRUE,NHmat_ans=T,genout_ans=T,file_name="sGD_demo",NeEstimator_dir=NeEstimator_dir)
-# specify landscape and sGD output
+sGD_output <- sGD(genind_obj,xy,dist.mat,radius,min_N,NS_ans=TRUE,GD_ans=TRUE,NHmat_ans=TRUE,
+                  genout_ans=TRUE,file_name="sGD_demo",NeEstimator_dir=NeEstimator_dir)
+
+# read in the landscape raster to use in plots
 landscape <- raster(system.file("extdata","sGD_demo_IBR_landscape.asc",package="sGD"))
-sGD_output <- read.csv(system.file("extdata","sGD_demo_output_sGD.csv",package="sGD"))
 
 # Convert raster to dataframe for ggplot
 landscape.p <- rasterToPoints(landscape)
