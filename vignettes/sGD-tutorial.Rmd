@@ -111,7 +111,7 @@ IBD_genepop_file <- system.file("extdata","sGD_demo_IBD.gen",package="sGD")
 library(adegenet)
 IBD_genind_obj = read.genepop(IBD_genepop_file,ncode = 3L,quiet=T)
 radius <- 6000 # for this demo, units are in meters 6000
-IBD_GD <- sGD(IBD_genind_obj,xy_data,IBD_dist,radius,min_N=20,GD_ans=TRUE,NS_ans=F)
+IBD_GD <- sGD(IBD_genind_obj,xy_data,IBD_dist,radius,min_N=20,metrics="GD")
 
 library(ggplot2)
 
@@ -141,7 +141,7 @@ Now let's use sGD to calculate Wright's *NS* in these local breeding neighborhoo
 
 ```{r,eval=T,message=FALSE,warning=FALSE,fig.width = 6, fig.height = 6}
 NeEstimator_dir <- "C:/NeEstimator"
-IBD_NS <- sGD(IBD_genind_obj,xy_data,IBD_dist,radius,min_N=20,GD_ans=FALSE,NS_ans=TRUE,NeEstimator_dir=NeEstimator_dir)
+IBD_NS <- sGD(IBD_genind_obj,xy_data,IBD_dist,radius,min_N=20,metrics="NS",NeEstimator_dir=NeEstimator_dir)
 
 ggplot()  +
 geom_point(data=IBD_NS, aes(x=X, y=Y,color=NS_ex0.02),size=5) + 
@@ -204,7 +204,7 @@ Notice the irregular shape of the neighborhood. In ecological space, this neighb
 IBR_genepop_file <- system.file("extdata","sGD_demo_IBR.gen",package="sGD") 
 IBR_genind_obj <- read.genepop(IBR_genepop_file,ncode = 3L,quiet=T)
 radius <- 16000 # for this demo, units are in meters 6000
-IBR_sGD = sGD(IBR_genind_obj,xy_data,IBR_dist,radius,min_N=20,GD_ans=TRUE,NS_ans=TRUE,NeEstimator_dir=NeEstimator_dir)
+IBR_sGD = sGD(IBR_genind_obj,xy_data,IBR_dist,radius,min_N=20,metrics=c("GD","NS"),NeEstimator_dir=NeEstimator_dir)
 
 ggplot()  +
 geom_point(data=IBR_sGD, aes(x=X, y=Y,color=Ap),size=5) + 
@@ -247,7 +247,7 @@ Notice the distribution is centered on zero and the median FIS value is very clo
 
 ```{r,eval=T,message=FALSE,warning=FALSE,fig.width = 6, fig.height = 6}
 radius <- 24000
-IBR_sGD_24k = sGD(IBR_genind_obj,xy_data,IBR_dist,radius,min_N=20,GD_ans=TRUE,NS_ans=F)
+IBR_sGD_24k = sGD(IBR_genind_obj,xy_data,IBR_dist,radius,min_N=20,metrics="GD")
 hist(IBR_sGD_24k$FIS)
 median(na.omit(IBR_sGD_24k$FIS))
 ```
@@ -256,7 +256,7 @@ See how the distribution of FIS values shifted to the right (positive values) an
 
 ```{r,eval=T,message=FALSE,warning=FALSE,fig.width = 6, fig.height = 6}
 radius <- 10000
-IBR_sGD_10k = sGD(IBR_genind_obj,xy_data,IBR_dist,radius,min_N=20,GD_ans=TRUE,NS_ans=F)
+IBR_sGD_10k = sGD(IBR_genind_obj,xy_data,IBR_dist,radius,min_N=20,metrics="GD")
 hist(IBR_sGD_10k$FIS)
 median(na.omit(IBR_sGD_10k$FIS))
 ```

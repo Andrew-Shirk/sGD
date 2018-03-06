@@ -54,7 +54,7 @@ distmat <- function(sp_points,method,file_name=NULL,landscape=NULL)
       # write matrices to csv files
       if(is.null(file_name)==F)
       {
-        write.table(ed,paste(file_name,"_edmat.csv",sep=""),row.names=F,col.names=F,sep=",")         
+        write.table(ed,paste0(file_name,"_edmat.csv",sep=""),row.names=F,col.names=F,sep=",")         
       }
     }
     

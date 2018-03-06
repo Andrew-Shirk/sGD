@@ -31,8 +31,10 @@ Imports:
     sp,
     ecodist,
     gdistance,
-Suggests: knitr,
+Suggests:
+    knitr,
     ggplot2,
     maptools
 License: GPL (>= 2)
 VignetteBuilder: knitr
+RoxygenNote: 5.0.1
