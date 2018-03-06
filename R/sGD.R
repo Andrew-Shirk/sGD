@@ -8,7 +8,7 @@
 #' @param metrics Optional. Provide a vector of the metrics you would like sGD to produce. Options include "GD" (genetic diversity indices), "NS" (Wright's genetic neighobrhood size), "HWE" (tests for Hardy-Weinberg equilibrium, heterozygote excess, and homozygote excess), and "pFST" (a matrix of pairwise FST values for all neighborhoods)". Note that calculating pFST takes considerable time (several hours using the sGD demo data).
 #' @param min_N The minimum sample size per neighborhood for indices to be calculated. NA is returned for neighborhoods < \code{min_N}.
 #' @param max_N Optional. The maximum sample size per neighborhood for indices to be calculated. If the number of individuals in the neighborhood exceeds \code{max_N}, a sample of size \code{max_N} will be used from the neighborhood to compute the metrics and output files specified by the user. Note that if \code{max_N} is specified, and the value is too small to be representative of the neighobrhood, the results could differ significantly compared to if all individuals in the neighborhood were used.
-#' @param NeEstimator_dir Optional. Path to the NeEstimator directory. NeEstimator 2.0 or > is required only if you include the "NS" metric. It can be downloaded from \url{http://molecularfisherieslaboratory.com.au/neestimator-software}.
+#' @param NeEstimator_dir Optional. Path to the NeEstimator directory. NeEstimator 2.01 is required only if you include the "NS" metric. It can be downloaded from \url{http://molecularfisherieslaboratory.com.au/neestimator-software}.
 #' @param NHmat_ans Logical (Default = FALSE). If TRUE, a matrix defining neighborhood membership is written to the working directory. For each row in the matrix, a value of 1 occurs at the indices of all individuals inside the neighborhood and a value of 0 occurs for all individuals outside the neighborhood. 
 #' @param genout_ans Logical (Default = FALSE). If TRUE, a genepop file containing the genotypes for all neighborhoods is written to the working directory. 
 #' 
@@ -51,7 +51,7 @@
 #' # run sGD
 #' sGD_output <- sGD(genind_obj,xy,dist.mat,NH_radius=16000,min_N=20,max_N=NULL,
 #'                   metrics=c("GD","NS","HWE"), NHmat_ans=TRUE,genout_ans=TRUE,
-#'                   file_name="sGD_demo", NeEstimator_dir="C:/NeEstimator")
+#'                   file_name="sGD_demo", NeEstimator_dir="C:/NeEstimator_2.01")
 #'
 #' # read in the landscape raster to use in plots
 #' landscape <- raster(system.file("extdata","sGD_demo_IBR_landscape.asc",package="sGD"))
@@ -356,19 +356,19 @@ sGD <- function(genind_obj,xy,dist.mat,NH_radius,min_N,max_N=NULL,metrics=NULL,N
     if (OS=="Darwin")
     {
       file.copy(file.path(NeEstimator_dir,"Ne2M"),getwd())
-      file.copy(file.path(NeEstimator_dir,"NeEstimator.jar"),getwd())
+      file.copy(file.path(NeEstimator_dir,"NeEstimator 2.01.jar"),getwd())
       system("./Ne2M  m:Ne2_input.txt", ignore.stdout = T, ignore.stderr = T)
       file.remove("Ne2M")
-      file.remove("NeEstimator.jar")
+      file.remove("NeEstimator 2.01.jar")
     }
     
     if (OS=="Linux")
     {
       file.copy(file.path(NeEstimator_dir,"Ne2L"),getwd())
-      file.copy(file.path(NeEstimator_dir,"NeEstimator.jar"),getwd())
+      file.copy(file.path(NeEstimator_dir,"NeEstimator 2.01.jar"),getwd())
       system("./Ne2L  m:Ne2_input.txt", ignore.stdout = T, ignore.stderr = T)
       file.remove("Ne2L")
-      file.remove("NeEstimator.jar")
+      file.remove("NeEstimator 2.01.jar")
     }
     
     # read the Ne results file

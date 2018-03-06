@@ -4,9 +4,9 @@
 \alias{sGD}
 \title{Calculate spatially explicit indicies of genetic diversity and Wright's neighborhood size (NS).}
 \usage{
-sGD(genind_obj, xy, dist.mat, NH_radii, min_N, max_N = NULL, metrics = NULL,
-  NHmat_ans = FALSE, genout_ans = FALSE, file_name = NULL,
-  NeEstimator_dir = NULL)
+sGD(genind_obj, xy, dist.mat, NH_radius, min_N, max_N = NULL,
+  metrics = NULL, NHmat_ans = FALSE, genout_ans = FALSE,
+  file_name = NULL, NeEstimator_dir = NULL)
 }
 \arguments{
 \item{genind_obj}{A genind object (created by the adegenet package function import2genind or related methods) containing individual genotypes. The order of the individuals must be the same as the order in the xy and dist.mat inputs below.}
@@ -15,21 +15,21 @@ sGD(genind_obj, xy, dist.mat, NH_radii, min_N, max_N = NULL, metrics = NULL,
 
 \item{dist.mat}{An NxN (N= sample size) matrix of pairwise landscape distances (Euclidean or effective). The \code{distmat} function in the sGD package may be used to produce Euclidean and cost-weighted distance matrices. The order of the rows and columns in the matrix must match the order in the xy and genind_obj inputs.}
 
-\item{NH_radii}{A vector of genetic neighborhood radii obtained from using the \code{infer2sigma} function.}
+\item{NH_radius}{A single value to be used for all neighborhoods, or a vector of genetic neighborhood radii, optionally obtained from using the \code{infer2sigma} function. Note that if you specify a vector of radii, sGD will not calculate metrics when the radius value is NA.}
 
 \item{min_N}{The minimum sample size per neighborhood for indices to be calculated. NA is returned for neighborhoods < \code{min_N}.}
 
 \item{max_N}{Optional. The maximum sample size per neighborhood for indices to be calculated. If the number of individuals in the neighborhood exceeds \code{max_N}, a sample of size \code{max_N} will be used from the neighborhood to compute the metrics and output files specified by the user. Note that if \code{max_N} is specified, and the value is too small to be representative of the neighobrhood, the results could differ significantly compared to if all individuals in the neighborhood were used.}
 
-\item{metrics}{Optional. Provide a vector of the metrics you would like sGD to produce. Options include "GD" (genetic diversity indices), "NS" (Wright's genetic neighobrhood size), and "pFST" (a matrix of pairwise FST values for all neighborhoods)". Note that calculating pFST takes considerable time (several hours using the sGD demo data).}
+\item{metrics}{Optional. Provide a vector of the metrics you would like sGD to produce. Options include "GD" (genetic diversity indices), "NS" (Wright's genetic neighobrhood size), "HWE" (tests for Hardy-Weinberg equilibrium, heterozygote excess, and homozygote excess), and "pFST" (a matrix of pairwise FST values for all neighborhoods)". Note that calculating pFST takes considerable time (several hours using the sGD demo data).}
 
-\item{NHmat_ans}{Logical (Default = FALSE). If TRUE, a matrix defining neighborhood membership is written to the working directory. For each row in the matrix, a value of 1 occurs at the indices of all individuals inside the neighborhood and a value of 0 occurs for all individuals outside the neighborhood. If a row is comprised of NA's, it means the neighborhood was not given a radius in the NH_radii file (generally because the number of individuals in the neighborhood was < min_N or because the FIS was too far from zero).}
+\item{NHmat_ans}{Logical (Default = FALSE). If TRUE, a matrix defining neighborhood membership is written to the working directory. For each row in the matrix, a value of 1 occurs at the indices of all individuals inside the neighborhood and a value of 0 occurs for all individuals outside the neighborhood.}
 
 \item{genout_ans}{Logical (Default = FALSE). If TRUE, a genepop file containing the genotypes for all neighborhoods is written to the working directory.}
 
 \item{file_name}{(optional) A character string that will be appended to the front of the output filename (will end with "_sGD.csv"). If none specified, no output file will be written.}
 
-\item{NeEstimator_dir}{Optional. Path to the NeEstimator directory. NeEstimator 2.0 or > is required only if you include the "NS" metric. It can be downloaded from \url{http://molecularfisherieslaboratory.com.au/neestimator-software}.}
+\item{NeEstimator_dir}{Optional. Path to the NeEstimator directory. NeEstimator 2.01 is required only if you include the "NS" metric. It can be downloaded from \url{http://molecularfisherieslaboratory.com.au/neestimator-software}.}
 }
 \value{
 sGD returns a data frame containing estimates of genetic diversity and/or neighborhood size for neighborhoods surrounding each sample location. The order of the rows in the output matches the order of the samples in the inputs.
@@ -87,12 +87,13 @@ dist.mat <- as.matrix(read.csv(system.file("extdata","sGD_demo_cdmat.csv",packag
                                header=FALSE))
 
 # convert genepop to genind (make sure you specify the correct allele code digits - ncode)
-genind_obj <- read.genepop(genepop.file,ncode=3L,quiet=TRUE) 
+genind_obj <- read.genepop(genepop.file,ncode=3L,quiet=TRUE)
+pop(genind_obj) = xy$Indiv_ID # give each location a unique population ID
 
 # run sGD
-sGD_output <- sGD(genind_obj,xy,dist.mat,radius=16000,min_N=20,max_N=NULL,
-                  metrics=c("GD","NS"), NHmat_ans=TRUE,genout_ans=TRUE,
-                  file_name="sGD_demo", NeEstimator_dir="C:/NeEstimator")
+sGD_output <- sGD(genind_obj,xy,dist.mat,NH_radius=16000,min_N=20,max_N=NULL,
+                  metrics=c("GD","NS","HWE"), NHmat_ans=TRUE,genout_ans=TRUE,
+                  file_name="sGD_demo", NeEstimator_dir="C:/NeEstimator_2.01")
 
 # read in the landscape raster to use in plots
 landscape <- raster(system.file("extdata","sGD_demo_IBR_landscape.asc",package="sGD"))
@@ -115,4 +116,3 @@ ggplot()  +
        panel.background = element_blank())
        
 }
-

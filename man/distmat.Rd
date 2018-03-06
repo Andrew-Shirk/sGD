@@ -44,4 +44,3 @@ file_name <- "sGD_demo"
 ed <- distmat(sp_points,method="ed",file_name = file_name)
 cd <- distmat(sp_points,method="cd",file_name = file_name,landscape=landscape)
 }
-

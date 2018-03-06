@@ -6,9 +6,9 @@
 #' @param dist.mat An NxN (N= sample size) matrix of pairwise landscape distances (Euclidean or effective). The \code{distmat} function in the sGD package may be used to produce Euclidean and cost-weighted distance matrices. The order of the rows and columns in the matrix must match the order in the xy and genind_obj inputs.
 #' @param min_N The minimum sample size per neighborhood for indices to be calculated. NA is returned for neighborhoods < \code{min_N}.
 #' @param max_N Optional. The maximum sample size per neighborhood for indices to be calculated. If the number of individuals in the neighborhood exceeds \code{max_N}, a sample of size \code{max_N} will be used from the neighborhood to compute the metrics and output files specified by the user. Note that if \code{max_N} is specified, and the value is too small to be representative of the neighobrhood, the results could differ significantly compared to if all individuals in the neighborhood were used.
-#' @param min_distances
-#' @param max_absFIS
-#' @param raw_out
+#' @param min_distances The minimum number of distances allowed.
+#' @param max_absFIS The maximum absolute FIS value allowed. If NULL, all FIS values are considered valid. 
+#' @param raw_out Boolean. Do you want to write the neighborhood FIS values for each radius to a csv file?
 #'
 #' @return 
 #'

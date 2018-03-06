@@ -20,7 +20,7 @@ Description: sGD provides spatially explicit estimates of genetic diversity
     calculates genetic diversity indices and/or Wright's neighborhood size (a
     local measure of effective population size that accounts for the continuous
     structure of populations isolated by distance). Requires the NeEstimator
-    program (>= 2.0) available at
+    program (version 2.01) available at
     http://molecularfisherieslaboratory.com.au/neestimator-software.
 Depends:
     R (>= 3.0.0)
@@ -37,4 +37,4 @@ Suggests:
     maptools
 License: GPL (>= 2)
 VignetteBuilder: knitr
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
