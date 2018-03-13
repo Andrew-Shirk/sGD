@@ -2,7 +2,7 @@ Package: sGD
 Type: Package
 Title: Spatially explicit estimation of genetic diversity indices and Wright's
     neighborhood size (NS)
-Version: 2.1
+Version: 2.11
 Date: 2015-08-06
 Author: Andrew Shirk
 Maintainer: Andrew Shirk <ashirk@uw.edu>

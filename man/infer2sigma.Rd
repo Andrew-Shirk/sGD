@@ -4,8 +4,7 @@
 \alias{infer2sigma}
 \title{Infer the radius of Wright's genetic neighborhood from codominant marker genotypes. The correct radius is equal to 2 sigma, where sigma is the mean parent-offspring dispersal distance.}
 \usage{
-infer2sigma(genind_obj, xy, dist.mat, distances, min_N, max_N = NULL,
-  min_distances = 1, max_absFIS = NULL, raw_out = FALSE)
+infer2sigma(genind_obj, xy, dist.mat, radii, min_N, max_N = NULL)
 }
 \arguments{
 \item{genind_obj}{A genind object (created by the adegenet package function import2genind or related methods) containing individual genotypes. The order of the individuals must be the same as the order in the xy and dist.mat inputs below.}
@@ -14,17 +13,11 @@ infer2sigma(genind_obj, xy, dist.mat, distances, min_N, max_N = NULL,
 
 \item{dist.mat}{An NxN (N= sample size) matrix of pairwise landscape distances (Euclidean or effective). The \code{distmat} function in the sGD package may be used to produce Euclidean and cost-weighted distance matrices. The order of the rows and columns in the matrix must match the order in the xy and genind_obj inputs.}
 
-\item{distances}{A vector if distances at which to evaluate the evidence for the correct neighborhood radius.}
+\item{radii}{A vector of neighborhood radii at which to evaluate the evidence for the correct neighborhood radius.}
 
 \item{min_N}{The minimum sample size per neighborhood for indices to be calculated. NA is returned for neighborhoods < \code{min_N}.}
 
 \item{max_N}{Optional. The maximum sample size per neighborhood for indices to be calculated. If the number of individuals in the neighborhood exceeds \code{max_N}, a sample of size \code{max_N} will be used from the neighborhood to compute the metrics and output files specified by the user. Note that if \code{max_N} is specified, and the value is too small to be representative of the neighobrhood, the results could differ significantly compared to if all individuals in the neighborhood were used.}
-
-\item{min_distances}{The minimum number of distances allowed.}
-
-\item{max_absFIS}{The maximum absolute FIS value allowed. If NULL, all FIS values are considered valid.}
-
-\item{raw_out}{Boolean. Do you want to write the neighborhood FIS values for each radius to a csv file?}
 }
 \value{
 
@@ -45,14 +38,11 @@ dist.mat <- as.matrix(read.csv(system.file("extdata","sGD_demo_cdmat.csv",packag
 # convert genepop to genind (make sure you specify the correct allele code digits - ncode)
 genind_obj <- read.genepop(genepop.file,ncode=3L,quiet=TRUE) 
 
-# specify distances to evaluate
-distances = c(8000,12000,16000,20000,24000)
+# specify radii to evaluate
+radii = c(8000,12000,16000,20000,24000)
 
 # run infer2sigma
-est2sigma <- infer2sigma(genind_obj,xy,dist.mat,distances,min_N=20)
-
-NH_radii = est2sigma$opt_radius
-NH_radii[which(est2sigma$num_distances < 4)] = NA
-NH_radii[which(abs(est2sigma$FIS_error) > 0.02)] = NA
+est2sigma <- infer2sigma(genind_obj,xy,dist.mat,radii,min_N=20)
+radii_summary = aggregate(FIS~radius,est2sigma,median)
 
 }

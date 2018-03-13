@@ -79,58 +79,51 @@
 #' @importFrom hierfstat basic.stats
 #' @importFrom hierfstat nb.alleles 
 #' @importFrom hierfstat genind2hierfstat 
-#' @importFrom diveRsity basicStats
 #' 
 #' @export
 #' 
-sGD <- function(genind_obj,xy,dist.mat,NH_radius,min_N,max_N=NULL,metrics=NULL,NHmat_ans=FALSE,genout_ans=FALSE,file_name=NULL,NeEstimator_dir=NULL)
-{
+sGD <- function(genind_obj,xy,dist.mat,NH_radius,min_N,max_N=NULL,metrics=NULL,NHmat_ans=FALSE,
+                genout_ans=FALSE,file_name=NULL,NeEstimator_dir=NULL){
   
   #### check to make sure correct package versions are installed ####
   if(packageVersion("adegenet") < "2.0.0") {
     stop("Please install the latest version of the adegenet package (>= 2.0.1)")
   }
   
-  if(packageVersion("hierfstat") < "0.04.15") {
-    stop("Please install the development version of the hierfstat package (>= 0.04.22) 
-       First, install the devtools package, and then run:
-               library(devtools)
-               install_github(\"jgx65/hierfstat\")
-       After installing hierfstat, please restart R before running sGD.")
+  if(packageVersion("hierfstat") < "0.04.22") {
+    stop("Please install the latest version of the hierfstat package (>= 0.04.22)") 
   }
   
   #### read input files and convert to required format ####
   cat ("Reading input files...\n")
-  df_dat = genind2df(genind_obj)
+  df_dat <- genind2df(genind_obj)
   
-  allele.digits = nchar(genind_obj@all.names[[1]][1])
-  
+  #### replace NA values with zeros
+  allele.digits <- nchar(genind_obj@all.names[[1]][1])
+  df_dat[is.na(df_dat)] <- paste(rep("0",allele.digits*2),collapse="")
+
   #### set parameters ####
-  numloci = length(names(genind_obj@all.names))
-  N = dim(genind_obj@tab)[1]
-  OS = as.character(Sys.info()['sysname']) # Needs to be a character for Linux
+  numloci <- length(names(genind_obj@all.names))
+  N <- dim(genind_obj@tab)[1]
+  OS <- as.character(Sys.info()['sysname']) # Needs to be a character for Linux
   
-  genout_file = paste(file_name,"_genepop.gen",sep="")
+  genout_file <- paste(file_name,"_genepop.gen",sep="")
   
   #### perform error checking on inputs ####
-  if (is.null(metrics) == T & NHmat_ans == F & genout_ans == F)
-  {
+  if (is.null(metrics) == T & NHmat_ans == F & genout_ans == F){
     stop("At least one metric must be specified or one of the following must be TRUE: NHmat_ans,
          or genout_ans")
   }
   
-  if (is.null(file_name) & NHmat_ans == T)
-  {
+  if (is.null(file_name) & NHmat_ans == T){
     stop("If NHmat_ans = TRUE, you must specify a file_name")
   }
   
-  if (is.null(file_name) & genout_ans == T)
-  {
+  if (is.null(file_name) & genout_ans == T){
     stop("If genout_ans = TRUE, you must specify a file_name")
   }
   
-  if (is.null(file_name) & "pFST" %in% metrics)
-  {
+  if (is.null(file_name) & "pFST" %in% metrics){
     stop("If you include pFST as a metric, you must specify a file_name")
   }
   
@@ -141,22 +134,18 @@ sGD <- function(genind_obj,xy,dist.mat,NH_radius,min_N,max_N=NULL,metrics=NULL,N
   if(nrow(dist.mat)!=N){stop("The number of rows in the dist.mat does not match the number of individuals in the genepop file")}
   if(ncol(dist.mat)!=N){stop("The number of columns in the dist.mat does not match the number of individuals in the genepop file")}
   
-  if(is.null(NeEstimator_dir)==F)
-  {
-    if(OS=="Windows")
-    {
+  if(is.null(NeEstimator_dir)==F){
+    if(OS=="Windows"){
       if(file.exists(file.path(NeEstimator_dir,"Ne2.exe"))==F)
       {stop("Cannot find NeEstimator executable. Is the path to NeEstimator_dir correct?")} 
     }
-    if(OS=="Linux")
-    {
+    if(OS=="Linux"){
       if(file.exists(file.path(NeEstimator_dir,"Ne2L"))==F)
       {stop("Cannot find NeEstimator executable. Is the path to NeEstimator_dir correct?")}
       if(file.exists(file.path(NeEstimator_dir,"NeEstimator.jar"))==F)
       {stop("Cannot find NeEstimator executable. Is the path to NeEstimator_dir correct?")} 
     }  
-    if(OS=="Darwin")
-    {
+    if(OS=="Darwin"){
       if(file.exists(file.path(NeEstimator_dir,"Ne2M"))==F)
       {stop("Cannot find NeEstimator executable. Is the path to NeEstimator_dir correct?")}
       if(file.exists(file.path(NeEstimator_dir,"NeEstimator.jar"))==F)
@@ -164,8 +153,7 @@ sGD <- function(genind_obj,xy,dist.mat,NH_radius,min_N,max_N=NULL,metrics=NULL,N
     }  
   }
   
-  if(is.null(NeEstimator_dir)==T & "NS" %in% metrics)
-  {
+  if(is.null(NeEstimator_dir)==T & "NS" %in% metrics){
     stop("You have specified NS as a metric, but you have not specified the location of NeEstimator_dir")
   }
   
@@ -174,37 +162,32 @@ sGD <- function(genind_obj,xy,dist.mat,NH_radius,min_N,max_N=NULL,metrics=NULL,N
   cat(paste("\t individuals:",N,"\n"))
   cat(paste("\t loci:",numloci,"\n"))  
   cat(paste("\t minimum sample size:",min_N,"\n"))
-  if(is.numeric(max_N))
-  {
+  if(is.numeric(max_N)){
     cat(paste("\t maximum sample size:",max_N,"\n"))
   } else {
     cat(paste("\t maximum sample size: NA","\n"))
   }
   
-  if(length(NH_radius)>1)
-  {
-    min_R = min(NH_radius,na.rm = T)
-    max_R = max(NH_radius,na.rm = T)
+  if(length(NH_radius)>1){
+    min_R <- min(NH_radius,na.rm = T)
+    max_R <- max(NH_radius,na.rm = T)
     cat(paste0("\t variable neighborhood radius (min = ",min_R,";max = ",max_R,")","\n"))
   } else {
     cat(paste("\t neighborhood radius:",NH_radius,"\n"))
   }
   
   
-  if(!is.null(file_name))
-  {
-    sGD_outfile = paste0(file_name,"_sGD.csv") 
+  if(!is.null(file_name)){
+    sGD_outfile <- paste0(file_name,"_sGD.csv") 
     cat(paste("\t sGD output file:",sGD_outfile,"in",getwd(),"\n"))
   } 
   
-  if(NHmat_ans==TRUE)
-  {
-    NHmat_file = paste0(file_name,"_neighborhood_matrix.csv")
+  if(NHmat_ans==TRUE){
+    NHmat_file <- paste0(file_name,"_neighborhood_matrix.csv")
     cat(paste("\t NH matrix file:",NHmat_file,"in",getwd(),"\n"))
   }  
   
-  if(genout_ans==TRUE)
-  {
+  if(genout_ans==TRUE){
     cat(paste("\t NH genepop file:",genout_file,"in",getwd(),"\n"))
   } 
   
@@ -212,129 +195,119 @@ sGD <- function(genind_obj,xy,dist.mat,NH_radius,min_N,max_N=NULL,metrics=NULL,N
   cat("Determining neighborhood membership from dist.mat and NH_radius...\n")
   
   # create NH matrix
-  NHmat = c()
+  NHmat <- c()
   
-  for(r in c(1:N))
-  {
-    if(length(NH_radius==1))
-    {
-      radius = NH_radius
+  for(r in c(1:N)){
+    if(length(NH_radius==1)){
+      radius <- NH_radius
     } else {
-      radius = NH_radius[r]
+      radius <- NH_radius[r]
     }
     
-    rvals = ifelse(dist.mat[r,] < radius,1,0)
-    NHmat = rbind(NHmat,rvals)
+    rvals <- ifelse(dist.mat[r,] < radius,1,0)
+    NHmat <- rbind(NHmat,rvals)
   }
   
   #### calculate neighborhood parameters ####
-  NH_N = as.numeric(rowSums(NHmat,na.rm = T)) # number of individuals per neighborhood
+  NH_N <- as.numeric(rowSums(NHmat,na.rm = T)) # number of individuals per neighborhood
   
-  if(max(NH_N)<min_N)
-  {
+  if(max(NH_N)<min_N){
     stop("There are no neighborhoods with at least min_N individuals at the radius selected. Aborting sGD.")
   }
   
-  if(length(NH_radius)==1)
-  {
-    valid_pops = as.numeric(which(NH_N >= min_N))
+  if(length(NH_radius)==1){
+    valid_pops <- as.numeric(which(NH_N >= min_N))
   } else {
-    valid_pops = as.numeric(which(!is.na(NH_radius) & NH_N >= min_N)) # which pops have > min_N individuals
+    valid_pops <- as.numeric(which(!is.na(NH_radius) & NH_N >= min_N)) # which pops have > min_N individuals
   }
   
   npops = length(valid_pops) # tracks the number of neighborhoods with min_N individuals
-  NH_Index = c(1:N) # a numerical means to consistently refer to neighborhoods (all, including those < min_N)
+  NH_Index <- c(1:N) # a numerical means to consistently refer to neighborhoods (all, including those < min_N)
   
   # create NH summary file
-  NH_summary = data.frame(NH_Index,as.character(genind_obj@pop),xy[,c(2,3)],NH_N,stringsAsFactors=F)
-  names(NH_summary) = c("NH_Index","NH_ID","X","Y","N")
+  NH_summary <- data.frame(NH_Index,as.character(genind_obj@pop),xy[,c(2,3)],NH_N,stringsAsFactors=F)
+  names(NH_summary) <- c("NH_Index","NH_ID","X","Y","N")
   
   #### write genepop file if required ####
-  if(!is.null(metrics) | genout_ans == T)
-  {
+  if(!is.null(metrics) | genout_ans == T){
     # write header and loci
-    header_length = 1+numloci
-    genepop_header = "sGD neighboorhood genepop file (each POP is a genetic neighborhood)"
+    header_length <- 1+numloci
+    genepop_header <- "sGD neighboorhood genepop file (each POP is a genetic neighborhood)"
     write.table(genepop_header, genout_file,sep="\t",quote=F,col.names=F,row.names=F)
     
-    for (locus in 1:numloci)
-    {
+    for (locus in 1:numloci){
       write.table(names(genind_obj@all.names)[locus], genout_file,sep="\t",quote=F,col.names=F,row.names=F,append=T)
     }
     
     # write genotypes for each POP
-    for (pop in valid_pops)
-    {
+    for (pop in valid_pops){
       # write POP to start each population
       write.table("POP", genout_file,sep="\t",quote=F,col.names=F,row.names=F,append=T)
       
       # check if maxN is specified and, if so, randomly subsample NH to max_N indivs
       if(!is.null(max_N) && NH_summary$N[pop] > max_N){
-        pop_ind = sample(which(NHmat[pop,]==1),max_N)
+        pop_ind <- sample(which(NHmat[pop,]==1),max_N)
       } else {
-        pop_ind = which(NHmat[pop,]==1) 
+        pop_ind <- which(NHmat[pop,]==1) 
       }
       
       # get genotypes for NH indivs and append to genepop file
-      NH_IDs = paste0("POP",pop,"_",NH_summary$NH_ID[pop_ind])
-      output = df_dat[pop_ind,]
-      output = data.frame(NH_IDs,",",output[2:ncol(output)])
+      NH_IDs <- paste0("POP",pop,"_",NH_summary$NH_ID[pop_ind])
+      output <- df_dat[pop_ind,]
+      output <- data.frame(NH_IDs,",",output[2:ncol(output)])
       write.table(output, genout_file,sep="\t",quote=F,col.names=F,row.names=F,append=T)
     }
   }
   
   #### if selected, run GD routine ####
-  if ("GD" %in% metrics)
-  {
+  if ("GD" %in% metrics){
     # Calculate genetic diversity indices
     cat("Calculating genetic diversity indices...\n")
     
     # read in NH genepop file
-    NH_genind = read.genepop(genout_file,ncode=allele.digits,quiet=T)
+    NH_genind <- read.genepop(genout_file,ncode=allele.digits,quiet=T)
     
     # fix issue with population names being taken from NH_IDs
     #NH_genind@pop = as.factor(rep(c(1:npops),NH_summary$N[valid_pops]))
     
     # convert to hierfstat format 
-    NH_hierfstat = genind2hierfstat(NH_genind)
+    NH_hierfstat <- genind2hierfstat(NH_genind)
     
     # calculate GD indices
-    NH_A = nb.alleles(NH_hierfstat)
-    NH_Ar = round(colMeans(allelic.richness(NH_hierfstat)$Ar),4)
-    NH_Ap = round(colSums(NH_A)/sum(NH_genind@loc.n.all),4)
-    NH_A = round(colMeans(NH_A),4)
-    NH_stats = basic.stats(NH_hierfstat,digits=4)
-    NH_Ho = round(colMeans(NH_stats$Ho),4)
-    NH_Hs = round(colMeans(NH_stats$Hs),4)
-    NH_FIS = round(colMeans(NH_stats$Fis),4)
+    NH_A <- nb.alleles(NH_hierfstat)
+    NH_Ar <- round(colMeans(allelic.richness(NH_hierfstat)$Ar),4)
+    NH_Ap <- round(colSums(NH_A)/sum(NH_genind@loc.n.all),4)
+    NH_A <- round(colMeans(NH_A),4)
+    NH_stats <- basic.stats(NH_hierfstat,digits=4)
+    NH_Ho <- round(colMeans(NH_stats$Ho),4)
+    NH_Hs <- round(colMeans(NH_stats$Hs),4)
+    NH_FIS <- round(colMeans(NH_stats$Fis),4)
     
     # assemble GD indices into dataframe and merge with NH_summary
-    GD_output = data.frame(NH_Index[valid_pops],NH_A,NH_Ap,NH_Ar,NH_Hs,NH_Ho,NH_FIS,stringsAsFactors=F)
-    names(GD_output) = c("NH_Index","A","Ap","Ar","Hs","Ho","FIS")
+    GD_output <- data.frame(NH_Index[valid_pops],NH_A,NH_Ap,NH_Ar,NH_Hs,NH_Ho,NH_FIS,stringsAsFactors=F)
+    names(GD_output) <- c("NH_Index","A","Ap","Ar","Hs","Ho","FIS")
     
-    NH_summary = merge(NH_summary,GD_output,by="NH_Index",all=T)
+    NH_summary <- merge(NH_summary,GD_output,by="NH_Index",all=T)
   }
   
     #### if selected, run HWE routine ####
-  if ("HWE" %in% metrics)
-  {
+  if ("HWE" %in% metrics){
     # Calculate genetic diversity indices
     cat("Testing Hardy-Weinberg equilibrium for neighborhoods...\n")
     
-    NH_diveRsity = basicStats(genout_file)
-    NH_HWE_p = as.numeric(round(colMeans(NH_diveRsity$hwe_llr_p[,-1],na.rm = T),4))
-    NH_HetEx = as.numeric(round(colMeans(NH_diveRsity$hwe_het[,-1],na.rm = T),4))
-    NH_HomEx = as.numeric(round(colMeans(NH_diveRsity$hwe_hom[,-1],na.rm = T),4))
+    NH_diveRsity <- basicStats(genout_file)
+    NH_HWE_p <- as.numeric(round(colMeans(NH_diveRsity$hwe_llr_p[,-1],na.rm = T),4))
+    NH_HetEx <- as.numeric(round(colMeans(NH_diveRsity$hwe_het[,-1],na.rm = T),4))
+    NH_HomEx <- as.numeric(round(colMeans(NH_diveRsity$hwe_hom[,-1],na.rm = T),4))
     
     # assemble HWE indices into dataframe and merge with NH_summary
-    HWE_output = data.frame(NH_Index[valid_pops],NH_HWE_p,NH_HetEx,NH_HomEx,stringsAsFactors=F)
-    names(HWE_output) = c("NH_Index","HWE_p","HetEx_p","HomEx_p")
-    NH_summary = merge(NH_summary,HWE_output,by="NH_Index",all=T)
+    HWE_output <- data.frame(NH_Index[valid_pops],NH_HWE_p,NH_HetEx,NH_HomEx,stringsAsFactors=F)
+    names(HWE_output) <- c("NH_Index","HWE_p","HetEx_p","HomEx_p")
+    NH_summary <- merge(NH_summary,HWE_output,by="NH_Index",all=T)
   }
   
   #### if selected, run NS routine ####
-  if ("NS" %in% metrics)
-  {  
+  if ("NS" %in% metrics){  
     # Calculate Ne
     cat("Calculating NS...\n")
     
@@ -346,15 +319,13 @@ sGD <- function(genind_obj,xy,dist.mat,NH_radius,min_N,max_N=NULL,metrics=NULL,N
     
     # run NeEstimator using OS-specific executable
     
-    if (OS=="Windows")
-    {
+    if (OS=="Windows"){
       file.copy(file.path(NeEstimator_dir,"Ne2.exe"),getwd())
       system("Ne2.exe  m:Ne2_input.txt", show.output.on.console = F,ignore.stdout = T, ignore.stderr = T)
       file.remove("Ne2.exe")
     }
     
-    if (OS=="Darwin")
-    {
+    if (OS=="Darwin"){
       file.copy(file.path(NeEstimator_dir,"Ne2M"),getwd())
       file.copy(file.path(NeEstimator_dir,"NeEstimator 2.01.jar"),getwd())
       system("./Ne2M  m:Ne2_input.txt", ignore.stdout = T, ignore.stderr = T)
@@ -362,8 +333,7 @@ sGD <- function(genind_obj,xy,dist.mat,NH_radius,min_N,max_N=NULL,metrics=NULL,N
       file.remove("NeEstimator 2.01.jar")
     }
     
-    if (OS=="Linux")
-    {
+    if (OS=="Linux"){
       file.copy(file.path(NeEstimator_dir,"Ne2L"),getwd())
       file.copy(file.path(NeEstimator_dir,"NeEstimator 2.01.jar"),getwd())
       system("./Ne2L  m:Ne2_input.txt", ignore.stdout = T, ignore.stderr = T)
@@ -372,15 +342,15 @@ sGD <- function(genind_obj,xy,dist.mat,NH_radius,min_N,max_N=NULL,metrics=NULL,N
     }
     
     # read the Ne results file
-    LDNe_output = readLines("Ne2_output.txt")
-    LDNe_datalines = grep("Estimated Ne",LDNe_output)
-    LDNe_data = suppressWarnings(as.numeric(unlist(strsplit(LDNe_output[LDNe_datalines], "\\s+")))) 
-    LDNe_estimates = data.frame(matrix(LDNe_data,nrow=npops,ncol=7,byrow=T)[,4:7],stringsAsFactors=F)
-    LDNe_estimates = data.frame(NH_Index[valid_pops],LDNe_estimates,stringsAsFactors = F)
-    names(LDNe_estimates) = c("NH_Index","NS_ex0.10","NS_ex0.05","NS_ex0.02","NS_ex0.00")
+    LDNe_output <- readLines("Ne2_output.txt")
+    LDNe_datalines <- grep("Estimated Ne",LDNe_output)
+    LDNe_data <- suppressWarnings(as.numeric(unlist(strsplit(LDNe_output[LDNe_datalines], "\\s+")))) 
+    LDNe_estimates <- data.frame(matrix(LDNe_data,nrow=npops,ncol=7,byrow=T)[,4:7],stringsAsFactors=F)
+    LDNe_estimates <- data.frame(NH_Index[valid_pops],LDNe_estimates,stringsAsFactors = F)
+    names(LDNe_estimates) <- c("NH_Index","NS_ex0.10","NS_ex0.05","NS_ex0.02","NS_ex0.00")
     
     # append NS results to NH_summary
-    NH_summary = merge(NH_summary,LDNe_estimates,by="NH_Index",all=T)
+    NH_summary <- merge(NH_summary,LDNe_estimates,by="NH_Index",all=T)
     
     # remove temporary files
     file.remove("Ne2_input.txt")
@@ -388,39 +358,34 @@ sGD <- function(genind_obj,xy,dist.mat,NH_radius,min_N,max_N=NULL,metrics=NULL,N
   }
   
   #### write selected files to disk ####
-  if(!is.null(file_name))
-  {
+  if(!is.null(file_name)){
     # write NH_summary to .csv file
     cat("Writing sGD output file...\n")
     write.table (NH_summary,sGD_outfile,row.names=F,sep=",",na="")
   }
   
-  if(NHmat_ans==TRUE)
-  {
+  if(NHmat_ans==TRUE){
     cat("Writing neighborhood membership matrix to file...\n")
-    dimnames(NHmat) = list(NH_summary$NH_ID,NH_summary$NH_ID)
+    dimnames(NHmat) <- list(NH_summary$NH_ID,NH_summary$NH_ID)
     write.table(matrix(c(NA,NH_summary$NH_ID),nrow=1),NHmat_file,row.names=F,col.names=F,sep=",",na="")
     write.table(NHmat,NHmat_file,row.names=NH_summary$NH_ID,col.names=F,sep=",",na="",append=T)
   }
   
-  if ("Dr" %in% metrics)
-  {
+  if ("Dr" %in% metrics){
     # Calculate genetic diversity indices
     cat("Writing Roger's r genetic distance matrix to file...\n")
     
     # read in NH genepop file
-    if(!exists("NH_genind"))
-    {
-      NH_genind = read.genepop(genout_file,ncode=allele.digits,quiet=T)
+    if(!exists("NH_genind")){
+      NH_genind <- read.genepop(genout_file,ncode=allele.digits,quiet=T)
     }
     
     # fix issue with population names being taken from NH_IDs
-    #NH_genind@pop = as.factor(rep(c(1:npops),NH_summary$N[valid_pops]))
+    #NH_genind@pop <- as.factor(rep(c(1:npops),NH_summary$N[valid_pops]))
     
     # convert to hierfstat format 
-    if(!exists("NH_hierfstat"))
-    {
-      NH_hierfstat = genind2hierfstat(NH_genind)
+    if(!exists("NH_hierfstat")){
+      NH_hierfstat <- genind2hierfstat(NH_genind)
     }
     
     # calculate Roger's r
@@ -430,8 +395,7 @@ sGD <- function(genind_obj,xy,dist.mat,NH_radius,min_N,max_N=NULL,metrics=NULL,N
     write.table(full(Dr),paste0(file_name,"_Dr.csv"),sep=",",col.names = F, row.names = F)
   }
   
-  if(genout_ans==FALSE)
-  {
+  if(genout_ans==FALSE){
     file.remove(genout_file)
   } else {
     cat("Writing neighborhood genepop file...\n")
